@@ -132,7 +132,7 @@
 									"path": "['fields']['state']"
 								},
 								"sink": {
-									"name": "records'][0]['fields_state"
+									"name": "state"
 								}
 							},
 							{
@@ -164,7 +164,7 @@
 									"path": "['fields']['name']"
 								},
 								"sink": {
-									"name": "records'][0]['fields_name"
+									"name": "name"
 								}
 							},
 							{
@@ -348,7 +348,7 @@
 									"path": "['fields']['type']"
 								},
 								"sink": {
-									"name": "records'][0]['fields_type"
+									"name": "type"
 								}
 							},
 							{
