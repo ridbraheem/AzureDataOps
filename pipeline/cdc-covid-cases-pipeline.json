@@ -1,6 +1,206 @@
 {
 	"name": "cdc-covid-cases-pipeline",
 	"properties": {
+		"activities": [
+			{
+				"name": "ExtractforEachDate",
+				"type": "ForEach",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "extract_cdc_cases",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "RestSource",
+									"httpRequestTimeout": "00:01:40",
+									"requestInterval": "00.00:00:00.010",
+									"requestMethod": "GET",
+									"paginationRules": {
+										"supportRFC5988": "true"
+									}
+								},
+								"sink": {
+									"type": "DelimitedTextSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									},
+									"formatSettings": {
+										"type": "DelimitedTextWriteSettings",
+										"quoteAllText": true,
+										"fileExtension": ".txt"
+									}
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"mappings": [
+										{
+											"source": {
+												"path": "$['submission_date']"
+											},
+											"sink": {
+												"name": "submission_date"
+											}
+										},
+										{
+											"source": {
+												"path": "$['state']"
+											},
+											"sink": {
+												"name": "state"
+											}
+										},
+										{
+											"source": {
+												"path": "$['tot_cases']"
+											},
+											"sink": {
+												"name": "tot_cases"
+											}
+										},
+										{
+											"source": {
+												"path": "$['conf_cases']"
+											},
+											"sink": {
+												"name": "conf_cases"
+											}
+										},
+										{
+											"source": {
+												"path": "$['prob_cases']"
+											},
+											"sink": {
+												"name": "prob_cases"
+											}
+										},
+										{
+											"source": {
+												"path": "$['new_case']"
+											},
+											"sink": {
+												"name": "new_case"
+											}
+										},
+										{
+											"source": {
+												"path": "$['pnew_case']"
+											},
+											"sink": {
+												"name": "pnew_case"
+											}
+										},
+										{
+											"source": {
+												"path": "$['tot_death']"
+											},
+											"sink": {
+												"name": "tot_death"
+											}
+										},
+										{
+											"source": {
+												"path": "$['conf_death']"
+											},
+											"sink": {
+												"name": "conf_death"
+											}
+										},
+										{
+											"source": {
+												"path": "$['prob_death']"
+											},
+											"sink": {
+												"name": "prob_death"
+											}
+										},
+										{
+											"source": {
+												"path": "$['new_death']"
+											},
+											"sink": {
+												"name": "new_death"
+											}
+										},
+										{
+											"source": {
+												"path": "$['pnew_death']"
+											},
+											"sink": {
+												"name": "pnew_death"
+											}
+										},
+										{
+											"source": {
+												"path": "$['created_at']"
+											},
+											"sink": {
+												"name": "created_at"
+											}
+										},
+										{
+											"source": {
+												"path": "$['consent_cases']"
+											},
+											"sink": {
+												"name": "consent_cases"
+											}
+										},
+										{
+											"source": {
+												"path": "$['consent_deaths']"
+											},
+											"sink": {
+												"name": "consent_deaths"
+											}
+										}
+									]
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "cdc_covid_cases",
+									"type": "DatasetReference",
+									"parameters": {
+										"queryParam": "?submission_date=2021-04-01T00:00:00.000"
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "cdc_covid_cases_csv",
+									"type": "DatasetReference"
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"name": "CreateDateRange",
+				"type": "ForEach",
+				"dependsOn": [],
+				"userProperties": []
+			}
+		],
+		"variables": {
+			"dates": {
+				"type": "Array"
+			}
+		},
 		"annotations": []
 	}
 }
