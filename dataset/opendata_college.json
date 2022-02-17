@@ -1,0 +1,12 @@
+{
+	"name": "opendata_college",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "opendata_college_api",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "RestResource",
+		"schema": []
+	}
+}
