@@ -1,0 +1,32 @@
+{
+	"name": "opendata_population_csv",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "synapse-trial-dev-WorkspaceDefaultStorage",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"suffix": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@dataset().suffix",
+					"type": "Expression"
+				},
+				"folderPath": "open-data-population",
+				"fileSystem": "synapsefiledev"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	}
+}
