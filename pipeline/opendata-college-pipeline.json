@@ -41,7 +41,7 @@
 						"mappings": [
 							{
 								"source": {
-									"path": "$['records'][0]['datasetid']"
+									"path": "['datasetid']"
 								},
 								"sink": {
 									"name": "datasetid"
@@ -49,7 +49,7 @@
 							},
 							{
 								"source": {
-									"path": "$['records'][0]['recordid']"
+									"path": "['recordid']"
 								},
 								"sink": {
 									"name": "recordid"
@@ -57,7 +57,7 @@
 							},
 							{
 								"source": {
-									"path": "$['records'][0]['fields']['naics_desc']"
+									"path": "['fields']['naics_desc']"
 								},
 								"sink": {
 									"name": "naics_desc"
@@ -65,7 +65,7 @@
 							},
 							{
 								"source": {
-									"path": "$['records'][0]['fields']['sector']"
+									"path": "['fields']['sector']"
 								},
 								"sink": {
 									"name": "sector"
@@ -73,7 +73,7 @@
 							},
 							{
 								"source": {
-									"path": "$['records'][0]['fields']['tot_enroll']"
+									"path": "['fields']['tot_enroll']"
 								},
 								"sink": {
 									"name": "tot_enroll"
@@ -81,7 +81,7 @@
 							},
 							{
 								"source": {
-									"path": "$['records'][0]['fields']['locale']"
+									"path": "['fields']['locale']"
 								},
 								"sink": {
 									"name": "locale"
@@ -89,7 +89,7 @@
 							},
 							{
 								"source": {
-									"path": "$['records'][0]['fields']['zip']"
+									"path": "['fields']['zip']"
 								},
 								"sink": {
 									"name": "zip"
@@ -97,7 +97,7 @@
 							},
 							{
 								"source": {
-									"path": "$['records'][0]['fields']['val_method']"
+									"path": "['fields']['val_method']"
 								},
 								"sink": {
 									"name": "val_method"
@@ -105,7 +105,7 @@
 							},
 							{
 								"source": {
-									"path": "$['records'][0]['fields']['housing']"
+									"path": "['fields']['housing']"
 								},
 								"sink": {
 									"name": "housing"
@@ -113,7 +113,7 @@
 							},
 							{
 								"source": {
-									"path": "$['records'][0]['fields']['hi_offer']"
+									"path": "['fields']['hi_offer']"
 								},
 								"sink": {
 									"name": "hi_offer"
@@ -121,7 +121,7 @@
 							},
 							{
 								"source": {
-									"path": "$['records'][0]['fields']['merge_id']"
+									"path": "['fields']['merge_id']"
 								},
 								"sink": {
 									"name": "merge_id"
@@ -129,15 +129,15 @@
 							},
 							{
 								"source": {
-									"path": "$['records'][0]['fields']['state']"
+									"path": "['fields']['state']"
 								},
 								"sink": {
-									"name": "state"
+									"name": "records'][0]['fields_state"
 								}
 							},
 							{
 								"source": {
-									"path": "$['records'][0]['fields']['status']"
+									"path": "['fields']['status']"
 								},
 								"sink": {
 									"name": "status"
@@ -145,7 +145,7 @@
 							},
 							{
 								"source": {
-									"path": "$['records'][0]['fields']['longitude']"
+									"path": "['fields']['longitude']"
 								},
 								"sink": {
 									"name": "longitude"
@@ -153,7 +153,7 @@
 							},
 							{
 								"source": {
-									"path": "$['records'][0]['fields']['naics_code']"
+									"path": "['fields']['naics_code']"
 								},
 								"sink": {
 									"name": "naics_code"
@@ -161,15 +161,15 @@
 							},
 							{
 								"source": {
-									"path": "$['records'][0]['fields']['name']"
+									"path": "['fields']['name']"
 								},
 								"sink": {
-									"name": "name"
+									"name": "records'][0]['fields_name"
 								}
 							},
 							{
 								"source": {
-									"path": "$['records'][0]['fields']['deg_grant']"
+									"path": "['fields']['deg_grant']"
 								},
 								"sink": {
 									"name": "deg_grant"
@@ -177,7 +177,7 @@
 							},
 							{
 								"source": {
-									"path": "$['records'][0]['fields']['objectid']"
+									"path": "['fields']['objectid']"
 								},
 								"sink": {
 									"name": "objectid"
@@ -185,7 +185,7 @@
 							},
 							{
 								"source": {
-									"path": "$['records'][0]['fields']['countyfips']"
+									"path": "['fields']['countyfips']"
 								},
 								"sink": {
 									"name": "countyfips"
@@ -193,7 +193,7 @@
 							},
 							{
 								"source": {
-									"path": "$['records'][0]['fields']['alias']"
+									"path": "['fields']['alias']"
 								},
 								"sink": {
 									"name": "alias"
@@ -201,7 +201,7 @@
 							},
 							{
 								"source": {
-									"path": "$['records'][0]['fields']['website']"
+									"path": "['fields']['website']"
 								},
 								"sink": {
 									"name": "website"
@@ -209,7 +209,7 @@
 							},
 							{
 								"source": {
-									"path": "$['records'][0]['fields']['stfips']"
+									"path": "['fields']['stfips']"
 								},
 								"sink": {
 									"name": "stfips"
@@ -217,7 +217,7 @@
 							},
 							{
 								"source": {
-									"path": "$['records'][0]['fields']['ft_enroll']"
+									"path": "['fields']['ft_enroll']"
 								},
 								"sink": {
 									"name": "ft_enroll"
@@ -225,7 +225,7 @@
 							},
 							{
 								"source": {
-									"path": "$['records'][0]['fields']['ipedsid']"
+									"path": "['fields']['ipedsid']"
 								},
 								"sink": {
 									"name": "ipedsid"
@@ -233,7 +233,7 @@
 							},
 							{
 								"source": {
-									"path": "$['records'][0]['fields']['dorm_cap']"
+									"path": "['fields']['dorm_cap']"
 								},
 								"sink": {
 									"name": "dorm_cap"
@@ -241,7 +241,7 @@
 							},
 							{
 								"source": {
-									"path": "$['records'][0]['fields']['sourcedate']"
+									"path": "['fields']['sourcedate']"
 								},
 								"sink": {
 									"name": "sourcedate"
@@ -249,7 +249,7 @@
 							},
 							{
 								"source": {
-									"path": "$['records'][0]['fields']['latitude']"
+									"path": "['fields']['latitude']"
 								},
 								"sink": {
 									"name": "latitude"
@@ -257,7 +257,7 @@
 							},
 							{
 								"source": {
-									"path": "$['records'][0]['fields']['address']"
+									"path": "['fields']['address']"
 								},
 								"sink": {
 									"name": "address"
@@ -265,7 +265,7 @@
 							},
 							{
 								"source": {
-									"path": "$['records'][0]['fields']['county']"
+									"path": "['fields']['county']"
 								},
 								"sink": {
 									"name": "county"
@@ -273,7 +273,7 @@
 							},
 							{
 								"source": {
-									"path": "$['records'][0]['fields']['population']"
+									"path": "['fields']['population']"
 								},
 								"sink": {
 									"name": "population"
@@ -281,7 +281,7 @@
 							},
 							{
 								"source": {
-									"path": "$['records'][0]['fields']['level']"
+									"path": "['fields']['level']"
 								},
 								"sink": {
 									"name": "level"
@@ -289,7 +289,7 @@
 							},
 							{
 								"source": {
-									"path": "$['records'][0]['fields']['city']"
+									"path": "['fields']['city']"
 								},
 								"sink": {
 									"name": "city"
@@ -297,7 +297,7 @@
 							},
 							{
 								"source": {
-									"path": "$['records'][0]['fields']['val_date']"
+									"path": "['fields']['val_date']"
 								},
 								"sink": {
 									"name": "val_date"
@@ -305,7 +305,7 @@
 							},
 							{
 								"source": {
-									"path": "$['records'][0]['fields']['telephone']"
+									"path": "['fields']['telephone']"
 								},
 								"sink": {
 									"name": "telephone"
@@ -313,7 +313,7 @@
 							},
 							{
 								"source": {
-									"path": "$['records'][0]['fields']['size_set']"
+									"path": "['fields']['size_set']"
 								},
 								"sink": {
 									"name": "size_set"
@@ -321,7 +321,7 @@
 							},
 							{
 								"source": {
-									"path": "$['records'][0]['fields']['cofips']"
+									"path": "['fields']['cofips']"
 								},
 								"sink": {
 									"name": "cofips"
@@ -329,7 +329,7 @@
 							},
 							{
 								"source": {
-									"path": "$['records'][0]['fields']['close_date']"
+									"path": "['fields']['close_date']"
 								},
 								"sink": {
 									"name": "close_date"
@@ -337,7 +337,7 @@
 							},
 							{
 								"source": {
-									"path": "$['records'][0]['fields']['tot_emp']"
+									"path": "['fields']['tot_emp']"
 								},
 								"sink": {
 									"name": "tot_emp"
@@ -345,31 +345,15 @@
 							},
 							{
 								"source": {
-									"path": "$['records'][0]['fields']['geo_shape']['coordinates'][0]"
+									"path": "['fields']['type']"
 								},
 								"sink": {
-									"name": "geo_shape_coordinates']["
+									"name": "records'][0]['fields_type"
 								}
 							},
 							{
 								"source": {
-									"path": "$['records'][0]['fields']['geo_shape']['type']"
-								},
-								"sink": {
-									"name": "geo_shape_type"
-								}
-							},
-							{
-								"source": {
-									"path": "$['records'][0]['fields']['type']"
-								},
-								"sink": {
-									"name": "fields_type"
-								}
-							},
-							{
-								"source": {
-									"path": "$['records'][0]['fields']['country']"
+									"path": "['fields']['country']"
 								},
 								"sink": {
 									"name": "country"
@@ -377,7 +361,7 @@
 							},
 							{
 								"source": {
-									"path": "$['records'][0]['fields']['pt_enroll']"
+									"path": "['fields']['pt_enroll']"
 								},
 								"sink": {
 									"name": "pt_enroll"
@@ -385,7 +369,7 @@
 							},
 							{
 								"source": {
-									"path": "$['records'][0]['fields']['zip4']"
+									"path": "['fields']['zip4']"
 								},
 								"sink": {
 									"name": "zip4"
@@ -393,7 +377,7 @@
 							},
 							{
 								"source": {
-									"path": "$['records'][0]['fields']['source']"
+									"path": "['fields']['source']"
 								},
 								"sink": {
 									"name": "source"
@@ -401,7 +385,7 @@
 							},
 							{
 								"source": {
-									"path": "$['records'][0]['fields']['shelter_id']"
+									"path": "['fields']['shelter_id']"
 								},
 								"sink": {
 									"name": "shelter_id"
@@ -409,7 +393,7 @@
 							},
 							{
 								"source": {
-									"path": "$['records'][0]['fields']['inst_size']"
+									"path": "['fields']['inst_size']"
 								},
 								"sink": {
 									"name": "inst_size"
@@ -417,23 +401,7 @@
 							},
 							{
 								"source": {
-									"path": "$['records'][0]['geometry']['type']"
-								},
-								"sink": {
-									"name": "geometry_type"
-								}
-							},
-							{
-								"source": {
-									"path": "$['records'][0]['geometry']['coordinates'][0]"
-								},
-								"sink": {
-									"name": "geometry_coordinates"
-								}
-							},
-							{
-								"source": {
-									"path": "$['records'][0]['record_timestamp']"
+									"path": "['record_timestamp']"
 								},
 								"sink": {
 									"name": "record_timestamp"
