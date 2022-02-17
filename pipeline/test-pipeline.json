@@ -1,0 +1,261 @@
+{
+	"name": "test-pipeline",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy data1",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "RestSource",
+						"httpRequestTimeout": "00:01:40",
+						"requestInterval": "00.00:00:00.010",
+						"requestMethod": "GET",
+						"paginationRules": {
+							"supportRFC5988": "true"
+						}
+					},
+					"sink": {
+						"type": "DelimitedTextSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextWriteSettings",
+							"quoteAllText": true,
+							"fileExtension": ".txt"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"path": "$['date']"
+								},
+								"sink": {
+									"name": "date"
+								}
+							},
+							{
+								"source": {
+									"path": "$['states']"
+								},
+								"sink": {
+									"name": "states"
+								}
+							},
+							{
+								"source": {
+									"path": "$['positive']"
+								},
+								"sink": {
+									"name": "positive"
+								}
+							},
+							{
+								"source": {
+									"path": "$['negative']"
+								},
+								"sink": {
+									"name": "negative"
+								}
+							},
+							{
+								"source": {
+									"path": "$['pending']"
+								},
+								"sink": {
+									"name": "pending"
+								}
+							},
+							{
+								"source": {
+									"path": "$['hospitalizedCurrently']"
+								},
+								"sink": {
+									"name": "hospitalizedCurrently"
+								}
+							},
+							{
+								"source": {
+									"path": "$['hospitalizedCumulative']"
+								},
+								"sink": {
+									"name": "hospitalizedCumulative"
+								}
+							},
+							{
+								"source": {
+									"path": "$['inIcuCurrently']"
+								},
+								"sink": {
+									"name": "inIcuCurrently"
+								}
+							},
+							{
+								"source": {
+									"path": "$['inIcuCumulative']"
+								},
+								"sink": {
+									"name": "inIcuCumulative"
+								}
+							},
+							{
+								"source": {
+									"path": "$['onVentilatorCurrently']"
+								},
+								"sink": {
+									"name": "onVentilatorCurrently"
+								}
+							},
+							{
+								"source": {
+									"path": "$['onVentilatorCumulative']"
+								},
+								"sink": {
+									"name": "onVentilatorCumulative"
+								}
+							},
+							{
+								"source": {
+									"path": "$['dateChecked']"
+								},
+								"sink": {
+									"name": "dateChecked"
+								}
+							},
+							{
+								"source": {
+									"path": "$['death']"
+								},
+								"sink": {
+									"name": "death"
+								}
+							},
+							{
+								"source": {
+									"path": "$['hospitalized']"
+								},
+								"sink": {
+									"name": "hospitalized"
+								}
+							},
+							{
+								"source": {
+									"path": "$['totalTestResults']"
+								},
+								"sink": {
+									"name": "totalTestResults"
+								}
+							},
+							{
+								"source": {
+									"path": "$['lastModified']"
+								},
+								"sink": {
+									"name": "lastModified"
+								}
+							},
+							{
+								"source": {
+									"path": "$['total']"
+								},
+								"sink": {
+									"name": "total"
+								}
+							},
+							{
+								"source": {
+									"path": "$['posNeg']"
+								},
+								"sink": {
+									"name": "posNeg"
+								}
+							},
+							{
+								"source": {
+									"path": "$['deathIncrease']"
+								},
+								"sink": {
+									"name": "deathIncrease"
+								}
+							},
+							{
+								"source": {
+									"path": "$['hospitalizedIncrease']"
+								},
+								"sink": {
+									"name": "hospitalizedIncrease"
+								}
+							},
+							{
+								"source": {
+									"path": "$['negativeIncrease']"
+								},
+								"sink": {
+									"name": "negativeIncrease"
+								}
+							},
+							{
+								"source": {
+									"path": "$['positiveIncrease']"
+								},
+								"sink": {
+									"name": "positiveIncrease"
+								}
+							},
+							{
+								"source": {
+									"path": "$['totalTestResultsIncrease']"
+								},
+								"sink": {
+									"name": "totalTestResultsIncrease"
+								}
+							},
+							{
+								"source": {
+									"path": "$['hash']"
+								},
+								"sink": {
+									"name": "hash"
+								}
+							}
+						],
+						"collectionReference": "",
+						"mapComplexValuesToString": false
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "testapi",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DelimitedText1",
+						"type": "DatasetReference",
+						"parameters": {
+							"suffix": {
+								"value": "testresult@{utcnow()}.csv",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			}
+		],
+		"annotations": []
+	}
+}

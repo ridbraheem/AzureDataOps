@@ -1,0 +1,12 @@
+{
+	"name": "testapi",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "testApiService",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "RestResource",
+		"schema": []
+	}
+}
