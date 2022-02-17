@@ -1,0 +1,12 @@
+{
+	"name": "cdc_covid_cases",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "cdc_covid_cases_api",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "RestResource",
+		"schema": []
+	}
+}
