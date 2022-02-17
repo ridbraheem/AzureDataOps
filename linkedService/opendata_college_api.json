@@ -1,0 +1,16 @@
+{
+	"name": "opendata_college_api",
+	"properties": {
+		"annotations": [],
+		"type": "RestService",
+		"typeProperties": {
+			"url": "https://public.opendatasoft.com/api/records/1.0/search/?dataset=us-colleges-and-universities&q=&rows=6857&facet=city&facet=state&facet=naics_desc",
+			"enableServerCertificateValidation": true,
+			"authenticationType": "Anonymous"
+		},
+		"connectVia": {
+			"referenceName": "AutoResolveIntegrationRuntime",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}
