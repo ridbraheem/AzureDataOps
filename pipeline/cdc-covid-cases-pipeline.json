@@ -1,0 +1,6 @@
+{
+	"name": "cdc-covid-cases-pipeline",
+	"properties": {
+		"annotations": []
+	}
+}

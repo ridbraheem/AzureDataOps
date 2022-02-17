@@ -1,5 +1,5 @@
 {
-	"name": "DelimitedText1",
+	"name": "cdc_covid_cases_csv",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "synapse-trial-dev-WorkspaceDefaultStorage",
@@ -15,11 +15,8 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
-				"fileName": {
-					"value": "@dataset().suffix",
-					"type": "Expression"
-				},
-				"folderPath": "test-covid-data",
+				"fileName": "@dataset().suffix",
+				"folderPath": "cdc-covid-cases",
 				"fileSystem": "synapsefiledev"
 			},
 			"columnDelimiter": ",",
