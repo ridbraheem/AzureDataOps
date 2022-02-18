@@ -422,7 +422,10 @@
 						"referenceName": "opendata_college_csv",
 						"type": "DatasetReference",
 						"parameters": {
-							"suffix": "open_college_@{utcnow()}.csv"
+							"suffix": {
+								"value": "open_college_@{formatDateTime(utcnow(), 'yyyy-MM-dd')}.csv ",
+								"type": "Expression"
+							}
 						}
 					}
 				]

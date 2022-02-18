@@ -166,7 +166,10 @@
 						"referenceName": "opendata_population_csv",
 						"type": "DatasetReference",
 						"parameters": {
-							"suffix": "open_population_@{utcnow()}.csv"
+							"suffix": {
+								"value": "open_population_@{formatDateTime(utcnow(), 'yyyy-MM-dd')}.csv",
+								"type": "Expression"
+							}
 						}
 					}
 				]
