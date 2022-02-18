@@ -248,7 +248,7 @@
 						"type": "DatasetReference",
 						"parameters": {
 							"suffix": {
-								"value": "testresult@{utcnow()}.csv",
+								"value": "testresult-latest",
 								"type": "Expression"
 							}
 						}
