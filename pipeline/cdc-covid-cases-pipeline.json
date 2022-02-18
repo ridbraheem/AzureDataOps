@@ -188,12 +188,6 @@
 						}
 					]
 				}
-			},
-			{
-				"name": "CreateDateRange",
-				"type": "ForEach",
-				"dependsOn": [],
-				"userProperties": []
 			}
 		],
 		"variables": {
