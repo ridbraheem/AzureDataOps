@@ -1,0 +1,23 @@
+{
+	"name": "cdc_vaccination",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "cdc_vaccination_api",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"queryParam": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "RestResource",
+		"typeProperties": {
+			"relativeUrl": {
+				"value": "@dataset().queryParam",
+				"type": "Expression"
+			}
+		},
+		"schema": []
+	}
+}
