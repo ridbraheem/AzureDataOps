@@ -19,7 +19,7 @@
 					"value": "@dataset().suffix",
 					"type": "Expression"
 				},
-				"folderPath": "open-data-population",
+				"folderPath": "opendata-population",
 				"fileSystem": "synapsefiledev"
 			},
 			"columnDelimiter": ",",
