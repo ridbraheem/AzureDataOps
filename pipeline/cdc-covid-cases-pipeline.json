@@ -169,7 +169,7 @@
 						"type": "DatasetReference",
 						"parameters": {
 							"queryParam": {
-								"value": "?submission_date=@{formatDateTime(getPastTime(2, 'Day'), 'yyyy-MM-dd')}",
+								"value": "?submission_date=@{formatDateTime(getPastTime(7, 'Day'), 'yyyy-MM-dd')}",
 								"type": "Expression"
 							}
 						}
@@ -350,7 +350,7 @@
 						"type": "DatasetReference",
 						"parameters": {
 							"queryParam": {
-								"value": "?submission_date=@{formatDateTime(getPastTime(2, 'Day'), 'yyyy-MM-dd')}",
+								"value": "?submission_date=@{formatDateTime(getPastTime(7, 'Day'), 'yyyy-MM-dd')}",
 								"type": "Expression"
 							}
 						}
