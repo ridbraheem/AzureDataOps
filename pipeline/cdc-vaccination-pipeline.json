@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "extract_latest_cases_lake",
+				"name": "extract_latest_vaccination_lake",
 				"type": "Copy",
 				"dependsOn": [],
 				"policy": {
@@ -725,7 +725,7 @@
 				]
 			},
 			{
-				"name": "extract_latest_cases_pool",
+				"name": "extract_latest_vaccination_pool",
 				"type": "Copy",
 				"dependsOn": [],
 				"policy": {
@@ -1422,7 +1422,7 @@
 						"type": "DatasetReference",
 						"parameters": {
 							"queryParam": {
-								"value": "?date=@{formatDateTime(getPastTime(2, 'Day'), 'yyyy-MM-dd')}",
+								"value": "?date=@{formatDateTime(getPastTime(7, 'Day'), 'yyyy-MM-dd')}",
 								"type": "Expression"
 							}
 						}
