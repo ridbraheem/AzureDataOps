@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "extract_opendata_population",
+				"name": "extract_opendata_population_lake",
 				"type": "Copy",
 				"dependsOn": [],
 				"policy": {
@@ -171,6 +171,167 @@
 								"type": "Expression"
 							}
 						}
+					}
+				]
+			},
+			{
+				"name": "extract_opendata_population_pool",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "RestSource",
+						"httpRequestTimeout": "00:01:40",
+						"requestInterval": "00.00:00:00.010",
+						"requestMethod": "GET",
+						"paginationRules": {
+							"supportRFC5988": "true"
+						}
+					},
+					"sink": {
+						"type": "SqlPoolSink",
+						"preCopyScript": "TRUNCATE TABLE Staging",
+						"writeBehavior": "Insert",
+						"sqlWriterUseTableLock": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"path": "['datasetid']"
+								},
+								"sink": {
+									"name": "datasetid"
+								}
+							},
+							{
+								"source": {
+									"path": "['recordid']"
+								},
+								"sink": {
+									"name": "recordid"
+								}
+							},
+							{
+								"source": {
+									"path": "['fields']['total_population']"
+								},
+								"sink": {
+									"name": "total_population"
+								}
+							},
+							{
+								"source": {
+									"path": "['fields']['female_population']"
+								},
+								"sink": {
+									"name": "female_population"
+								}
+							},
+							{
+								"source": {
+									"path": "['fields']['count']"
+								},
+								"sink": {
+									"name": "count"
+								}
+							},
+							{
+								"source": {
+									"path": "['fields']['foreign_born']"
+								},
+								"sink": {
+									"name": "foreign_born"
+								}
+							},
+							{
+								"source": {
+									"path": "['fields']['state_code']"
+								},
+								"sink": {
+									"name": "state_code"
+								}
+							},
+							{
+								"source": {
+									"path": "['fields']['average_household_size']"
+								},
+								"sink": {
+									"name": "average_household_size"
+								}
+							},
+							{
+								"source": {
+									"path": "['fields']['city']"
+								},
+								"sink": {
+									"name": "city"
+								}
+							},
+							{
+								"source": {
+									"path": "['fields']['race']"
+								},
+								"sink": {
+									"name": "race"
+								}
+							},
+							{
+								"source": {
+									"path": "['fields']['male_population']"
+								},
+								"sink": {
+									"name": "male_population"
+								}
+							},
+							{
+								"source": {
+									"path": "['fields']['median_age']"
+								},
+								"sink": {
+									"name": "median_age"
+								}
+							},
+							{
+								"source": {
+									"path": "['fields']['number_of_veterans']"
+								},
+								"sink": {
+									"name": "number_of_veterans"
+								}
+							},
+							{
+								"source": {
+									"path": "['fields']['state']"
+								},
+								"sink": {
+									"name": "state"
+								}
+							}
+						],
+						"collectionReference": "$['records']"
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "opendata_population",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "pool_open_data_population",
+						"type": "DatasetReference"
 					}
 				]
 			}
