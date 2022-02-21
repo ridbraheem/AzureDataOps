@@ -198,7 +198,7 @@
 					},
 					"sink": {
 						"type": "SqlPoolSink",
-						"preCopyScript": "TRUNCATE TABLE Staging",
+						"preCopyScript": "TRUNCATE TABLE [Staging].[open_data_population]",
 						"writeBehavior": "Insert",
 						"sqlWriterUseTableLock": false
 					},
