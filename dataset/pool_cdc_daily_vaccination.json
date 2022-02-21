@@ -1,0 +1,426 @@
+{
+	"name": "pool_cdc_daily_vaccination",
+	"properties": {
+		"annotations": [],
+		"type": "SqlPoolTable",
+		"schema": [
+			{
+				"name": "date",
+				"type": "datetime2",
+				"scale": 0
+			},
+			{
+				"name": "mmwr_week",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "location",
+				"type": "nvarchar"
+			},
+			{
+				"name": "distributed",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "distributed_janssen",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "distributed_moderna",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "distributed_pfizer",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "distributed_unk_manuf",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "dist_per_100k",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "distributed_per_100k_12plus",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "distributed_per_100k_18plus",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "distributed_per_100k_65plus",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "administered",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "administered_12plus",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "administered_18plus",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "administered_65plus",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "administered_janssen",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "administered_moderna",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "administered_pfizer",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "administered_unk_manuf",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "admin_per_100k",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "admin_per_100k_12plus",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "admin_per_100k_18plus",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "admin_per_100k_65plus",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "recip_administered",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "administered_dose1_recip",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "administered_dose1_pop_pct",
+				"type": "float",
+				"precision": 15
+			},
+			{
+				"name": "administered_dose1_recip_1",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "administered_dose1_recip_2",
+				"type": "float",
+				"precision": 15
+			},
+			{
+				"name": "administered_dose1_recip_3",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "administered_dose1_recip_4",
+				"type": "float",
+				"precision": 15
+			},
+			{
+				"name": "administered_dose1_recip_5",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "administered_dose1_recip_6",
+				"type": "float",
+				"precision": 15
+			},
+			{
+				"name": "series_complete_yes",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "series_complete_pop_pct",
+				"type": "float",
+				"precision": 15
+			},
+			{
+				"name": "series_complete_12plus",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "series_complete_12pluspop",
+				"type": "float",
+				"precision": 15
+			},
+			{
+				"name": "series_complete_18plus",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "series_complete_18pluspop",
+				"type": "float",
+				"precision": 15
+			},
+			{
+				"name": "series_complete_65plus",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "series_complete_65pluspop",
+				"type": "float",
+				"precision": 15
+			},
+			{
+				"name": "series_complete_janssen",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "series_complete_moderna",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "series_complete_pfizer",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "series_complete_unk_manuf",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "series_complete_janssen_12plus",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "series_complete_moderna_12plus",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "series_complete_pfizer_12plus",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "series_complete_unk_manuf_1",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "series_complete_janssen_18plus",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "series_complete_moderna_18plus",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "series_complete_pfizer_18plus",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "series_complete_unk_manuf_2",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "series_complete_janssen_65plus",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "series_complete_moderna_65plus",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "series_complete_pfizer_65plus",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "series_complete_unk_manuf_3",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "additional_doses",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "additional_doses_vax_pct",
+				"type": "float",
+				"precision": 15
+			},
+			{
+				"name": "additional_doses_12plus",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "additional_doses_12plus_vax_pct",
+				"type": "float",
+				"precision": 15
+			},
+			{
+				"name": "additional_doses_18plus",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "additional_doses_18plus_vax_pct",
+				"type": "float",
+				"precision": 15
+			},
+			{
+				"name": "additional_doses_50plus",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "additional_doses_50plus_vax_pct",
+				"type": "float",
+				"precision": 15
+			},
+			{
+				"name": "additional_doses_65plus",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "additional_doses_65plus_vax_pct",
+				"type": "float",
+				"precision": 15
+			},
+			{
+				"name": "additional_doses_moderna",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "additional_doses_pfizer",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "additional_doses_janssen",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "additional_doses_unk_manuf",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "administered_dose1_recip_5plus",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "administered_dose1_recip_5pluspop_pct",
+				"type": "float",
+				"precision": 15
+			},
+			{
+				"name": "series_complete_5plus",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "series_complete_5pluspop_pct",
+				"type": "float",
+				"precision": 15
+			},
+			{
+				"name": "administered_5plus",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "admin_per_100k_5plus",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "distributed_per_100k_5plus",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "series_complete_moderna_5plus",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "series_complete_pfizer_5plus",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "series_complete_janssen_5plus",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "series_complete_unk_manuf_5plus",
+				"type": "bigint",
+				"precision": 19
+			}
+		],
+		"typeProperties": {
+			"schema": "Staging",
+			"table": "cdc_daily_vaccination"
+		},
+		"sqlPool": {
+			"referenceName": "devpool",
+			"type": "SqlPoolReference"
+		}
+	}
+}
