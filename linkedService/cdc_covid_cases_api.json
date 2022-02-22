@@ -4,7 +4,7 @@
 		"annotations": [],
 		"type": "RestService",
 		"typeProperties": {
-			"url": "https://data.cdc.gov/resource/9mfq-cb36.csv",
+			"url": "https://data.cdc.gov/resource/9mfq-cb36.json",
 			"enableServerCertificateValidation": true,
 			"authenticationType": "Anonymous"
 		},
