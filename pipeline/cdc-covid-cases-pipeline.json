@@ -65,22 +65,6 @@
 							},
 							{
 								"source": {
-									"path": "$['conf_cases']"
-								},
-								"sink": {
-									"name": "conf_cases"
-								}
-							},
-							{
-								"source": {
-									"path": "$['prob_cases']"
-								},
-								"sink": {
-									"name": "prob_cases"
-								}
-							},
-							{
-								"source": {
 									"path": "$['new_case']"
 								},
 								"sink": {
@@ -101,22 +85,6 @@
 								},
 								"sink": {
 									"name": "tot_death"
-								}
-							},
-							{
-								"source": {
-									"path": "$['conf_death']"
-								},
-								"sink": {
-									"name": "conf_death"
-								}
-							},
-							{
-								"source": {
-									"path": "$['prob_death']"
-								},
-								"sink": {
-									"name": "prob_death"
 								}
 							},
 							{
@@ -142,25 +110,10 @@
 								"sink": {
 									"name": "created_at"
 								}
-							},
-							{
-								"source": {
-									"path": "$['consent_cases']"
-								},
-								"sink": {
-									"name": "consent_cases"
-								}
-							},
-							{
-								"source": {
-									"path": "$['consent_deaths']"
-								},
-								"sink": {
-									"name": "consent_deaths"
-								}
 							}
 						],
-						"collectionReference": ""
+						"collectionReference": "",
+						"mapComplexValuesToString": true
 					}
 				},
 				"inputs": [
@@ -181,7 +134,7 @@
 						"type": "DatasetReference",
 						"parameters": {
 							"suffix": {
-								"value": "cdc_covid_case_@{formatDateTime(getPastTime(1, 'Day'), 'yyyy-MM-dd')}.csv",
+								"value": "cdc_covid_case_@{formatDateTime(getPastTime(7, 'Day'), 'yyyy-MM-dd')}.csv",
 								"type": "Expression"
 							}
 						}
@@ -246,22 +199,6 @@
 							},
 							{
 								"source": {
-									"path": "$['conf_cases']"
-								},
-								"sink": {
-									"name": "conf_cases"
-								}
-							},
-							{
-								"source": {
-									"path": "$['prob_cases']"
-								},
-								"sink": {
-									"name": "prob_cases"
-								}
-							},
-							{
-								"source": {
 									"path": "$['new_case']"
 								},
 								"sink": {
@@ -282,22 +219,6 @@
 								},
 								"sink": {
 									"name": "tot_death"
-								}
-							},
-							{
-								"source": {
-									"path": "$['conf_death']"
-								},
-								"sink": {
-									"name": "conf_death"
-								}
-							},
-							{
-								"source": {
-									"path": "$['prob_death']"
-								},
-								"sink": {
-									"name": "prob_death"
 								}
 							},
 							{
@@ -323,25 +244,10 @@
 								"sink": {
 									"name": "created_at"
 								}
-							},
-							{
-								"source": {
-									"path": "$['consent_cases']"
-								},
-								"sink": {
-									"name": "consent_cases"
-								}
-							},
-							{
-								"source": {
-									"path": "$['consent_deaths']"
-								},
-								"sink": {
-									"name": "consent_deaths"
-								}
 							}
 						],
-						"collectionReference": ""
+						"collectionReference": "",
+						"mapComplexValuesToString": true
 					}
 				},
 				"inputs": [

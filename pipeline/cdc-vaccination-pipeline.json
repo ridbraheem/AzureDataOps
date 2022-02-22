@@ -705,7 +705,7 @@
 						"type": "DatasetReference",
 						"parameters": {
 							"queryParam": {
-								"value": "?date=@{formatDateTime(getPastTime(2, 'Day'), 'yyyy-MM-dd')}",
+								"value": "?date=@{formatDateTime(getPastTime(7, 'Day'), 'yyyy-MM-dd')}",
 								"type": "Expression"
 							}
 						}
@@ -717,7 +717,7 @@
 						"type": "DatasetReference",
 						"parameters": {
 							"suffix": {
-								"value": "cdc_vaccination_@{formatDateTime(getPastTime(1, 'Day'), 'yyyy-MM-dd')}.csv",
+								"value": "cdc_vaccination_@{formatDateTime(getPastTime(7, 'Day'), 'yyyy-MM-dd')}.csv",
 								"type": "Expression"
 							}
 						}
