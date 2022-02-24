@@ -2,7 +2,7 @@
 	"name": "SQL script 5",
 	"properties": {
 		"content": {
-			"query": "SET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\n\nCREATE TABLE [Staging].[cdc_daily_cases]\n( \n\t[submission_date] [nvarchar](4000)  NULL,\n\t[state] [nvarchar](4000)  NULL,\n\t[tot_cases] [nvarchar](4000)  NULL,\n\t[new_case] [nvarchar](4000)  NULL,\n\t[pnew_case] [nvarchar](4000)  NULL,\n\t[tot_death] [nvarchar](4000)  NULL,\n\t[new_death] [nvarchar](4000)  NULL,\n\t[pnew_death] [nvarchar](4000)  NULL,\n\t[created_at] [nvarchar](4000)  NULL\n)\nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n)\nGO",
+			"query": "SET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\n\nCREATE TABLE [cdc].[cdc_daily_cases]\n( \n\t[submission_date] [nvarchar](4000)  NULL,\n\t[state] [nvarchar](4000)  NULL,\n\t[tot_cases] [nvarchar](4000)  NULL,\n\t[new_case] [nvarchar](4000)  NULL,\n\t[pnew_case] [nvarchar](4000)  NULL,\n\t[tot_death] [nvarchar](4000)  NULL,\n\t[new_death] [nvarchar](4000)  NULL,\n\t[pnew_death] [nvarchar](4000)  NULL,\n\t[created_at] [nvarchar](4000)  NULL\n)\nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n)\nGO",
 			"metadata": {
 				"language": "sql"
 			},

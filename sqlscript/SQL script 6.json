@@ -1,0 +1,17 @@
+{
+	"name": "SQL script 6",
+	"properties": {
+		"content": {
+			"query": "CREATE TABLE [open_data].[dim_state_demographics]\n( \n\t[recordid] [nvarchar](4000)  NOT NULL,\n\t[state_code] [varchar](3)  NOT NULL,\n\t[state] [varchar](20)  NOT NULL,\n\t[total_population] [bigint],\n\t[female_population] [bigint],\n\t[male_population] [bigint],\n\t[foreign_born] [bigint],\n\t[median_age] [float],\n\t[average_household_size] [float] \n)\nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n);",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "devpool",
+				"poolName": "devpool"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
