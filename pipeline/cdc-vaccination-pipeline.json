@@ -1,0 +1,1441 @@
+{
+	"name": "cdc-vaccination-pipeline",
+	"properties": {
+		"activities": [
+			{
+				"name": "extract_latest_vaccination_lake",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "RestSource",
+						"httpRequestTimeout": "00:01:40",
+						"requestInterval": "00.00:00:00.010",
+						"requestMethod": "GET",
+						"paginationRules": {
+							"supportRFC5988": "true"
+						}
+					},
+					"sink": {
+						"type": "DelimitedTextSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextWriteSettings",
+							"quoteAllText": true,
+							"fileExtension": ".txt"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"path": "$['date']"
+								},
+								"sink": {
+									"name": "date"
+								}
+							},
+							{
+								"source": {
+									"path": "$['mmwr_week']"
+								},
+								"sink": {
+									"name": "mmwr_week"
+								}
+							},
+							{
+								"source": {
+									"path": "$['location']"
+								},
+								"sink": {
+									"name": "location"
+								}
+							},
+							{
+								"source": {
+									"path": "$['distributed']"
+								},
+								"sink": {
+									"name": "distributed"
+								}
+							},
+							{
+								"source": {
+									"path": "$['distributed_janssen']"
+								},
+								"sink": {
+									"name": "distributed_janssen"
+								}
+							},
+							{
+								"source": {
+									"path": "$['distributed_moderna']"
+								},
+								"sink": {
+									"name": "distributed_moderna"
+								}
+							},
+							{
+								"source": {
+									"path": "$['distributed_pfizer']"
+								},
+								"sink": {
+									"name": "distributed_pfizer"
+								}
+							},
+							{
+								"source": {
+									"path": "$['distributed_unk_manuf']"
+								},
+								"sink": {
+									"name": "distributed_unk_manuf"
+								}
+							},
+							{
+								"source": {
+									"path": "$['dist_per_100k']"
+								},
+								"sink": {
+									"name": "dist_per_100k"
+								}
+							},
+							{
+								"source": {
+									"path": "$['distributed_per_100k_12plus']"
+								},
+								"sink": {
+									"name": "distributed_per_100k_12plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['distributed_per_100k_18plus']"
+								},
+								"sink": {
+									"name": "distributed_per_100k_18plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['distributed_per_100k_65plus']"
+								},
+								"sink": {
+									"name": "distributed_per_100k_65plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['administered']"
+								},
+								"sink": {
+									"name": "administered"
+								}
+							},
+							{
+								"source": {
+									"path": "$['administered_12plus']"
+								},
+								"sink": {
+									"name": "administered_12plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['administered_18plus']"
+								},
+								"sink": {
+									"name": "administered_18plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['administered_65plus']"
+								},
+								"sink": {
+									"name": "administered_65plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['administered_janssen']"
+								},
+								"sink": {
+									"name": "administered_janssen"
+								}
+							},
+							{
+								"source": {
+									"path": "$['administered_moderna']"
+								},
+								"sink": {
+									"name": "administered_moderna"
+								}
+							},
+							{
+								"source": {
+									"path": "$['administered_pfizer']"
+								},
+								"sink": {
+									"name": "administered_pfizer"
+								}
+							},
+							{
+								"source": {
+									"path": "$['administered_unk_manuf']"
+								},
+								"sink": {
+									"name": "administered_unk_manuf"
+								}
+							},
+							{
+								"source": {
+									"path": "$['admin_per_100k']"
+								},
+								"sink": {
+									"name": "admin_per_100k"
+								}
+							},
+							{
+								"source": {
+									"path": "$['admin_per_100k_12plus']"
+								},
+								"sink": {
+									"name": "admin_per_100k_12plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['admin_per_100k_18plus']"
+								},
+								"sink": {
+									"name": "admin_per_100k_18plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['admin_per_100k_65plus']"
+								},
+								"sink": {
+									"name": "admin_per_100k_65plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['recip_administered']"
+								},
+								"sink": {
+									"name": "recip_administered"
+								}
+							},
+							{
+								"source": {
+									"path": "$['administered_dose1_recip']"
+								},
+								"sink": {
+									"name": "administered_dose1_recip"
+								}
+							},
+							{
+								"source": {
+									"path": "$['administered_dose1_pop_pct']"
+								},
+								"sink": {
+									"name": "administered_dose1_pop_pct"
+								}
+							},
+							{
+								"source": {
+									"path": "$['administered_dose1_recip_1']"
+								},
+								"sink": {
+									"name": "administered_dose1_recip_1"
+								}
+							},
+							{
+								"source": {
+									"path": "$['administered_dose1_recip_2']"
+								},
+								"sink": {
+									"name": "administered_dose1_recip_2"
+								}
+							},
+							{
+								"source": {
+									"path": "$['administered_dose1_recip_3']"
+								},
+								"sink": {
+									"name": "administered_dose1_recip_3"
+								}
+							},
+							{
+								"source": {
+									"path": "$['administered_dose1_recip_4']"
+								},
+								"sink": {
+									"name": "administered_dose1_recip_4"
+								}
+							},
+							{
+								"source": {
+									"path": "$['administered_dose1_recip_5']"
+								},
+								"sink": {
+									"name": "administered_dose1_recip_5"
+								}
+							},
+							{
+								"source": {
+									"path": "$['administered_dose1_recip_6']"
+								},
+								"sink": {
+									"name": "administered_dose1_recip_6"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_yes']"
+								},
+								"sink": {
+									"name": "series_complete_yes"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_pop_pct']"
+								},
+								"sink": {
+									"name": "series_complete_pop_pct"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_12plus']"
+								},
+								"sink": {
+									"name": "series_complete_12plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_12pluspop']"
+								},
+								"sink": {
+									"name": "series_complete_12pluspop"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_18plus']"
+								},
+								"sink": {
+									"name": "series_complete_18plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_18pluspop']"
+								},
+								"sink": {
+									"name": "series_complete_18pluspop"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_65plus']"
+								},
+								"sink": {
+									"name": "series_complete_65plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_65pluspop']"
+								},
+								"sink": {
+									"name": "series_complete_65pluspop"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_janssen']"
+								},
+								"sink": {
+									"name": "series_complete_janssen"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_moderna']"
+								},
+								"sink": {
+									"name": "series_complete_moderna"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_pfizer']"
+								},
+								"sink": {
+									"name": "series_complete_pfizer"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_unk_manuf']"
+								},
+								"sink": {
+									"name": "series_complete_unk_manuf"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_janssen_12plus']"
+								},
+								"sink": {
+									"name": "series_complete_janssen_12plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_moderna_12plus']"
+								},
+								"sink": {
+									"name": "series_complete_moderna_12plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_pfizer_12plus']"
+								},
+								"sink": {
+									"name": "series_complete_pfizer_12plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_unk_manuf_1']"
+								},
+								"sink": {
+									"name": "series_complete_unk_manuf_1"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_janssen_18plus']"
+								},
+								"sink": {
+									"name": "series_complete_janssen_18plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_moderna_18plus']"
+								},
+								"sink": {
+									"name": "series_complete_moderna_18plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_pfizer_18plus']"
+								},
+								"sink": {
+									"name": "series_complete_pfizer_18plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_unk_manuf_2']"
+								},
+								"sink": {
+									"name": "series_complete_unk_manuf_2"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_janssen_65plus']"
+								},
+								"sink": {
+									"name": "series_complete_janssen_65plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_moderna_65plus']"
+								},
+								"sink": {
+									"name": "series_complete_moderna_65plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_pfizer_65plus']"
+								},
+								"sink": {
+									"name": "series_complete_pfizer_65plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_unk_manuf_3']"
+								},
+								"sink": {
+									"name": "series_complete_unk_manuf_3"
+								}
+							},
+							{
+								"source": {
+									"path": "$['additional_doses']"
+								},
+								"sink": {
+									"name": "additional_doses"
+								}
+							},
+							{
+								"source": {
+									"path": "$['additional_doses_vax_pct']"
+								},
+								"sink": {
+									"name": "additional_doses_vax_pct"
+								}
+							},
+							{
+								"source": {
+									"path": "$['additional_doses_12plus']"
+								},
+								"sink": {
+									"name": "additional_doses_12plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['additional_doses_12plus_vax_pct']"
+								},
+								"sink": {
+									"name": "additional_doses_12plus_vax_pct"
+								}
+							},
+							{
+								"source": {
+									"path": "$['additional_doses_18plus']"
+								},
+								"sink": {
+									"name": "additional_doses_18plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['additional_doses_18plus_vax_pct']"
+								},
+								"sink": {
+									"name": "additional_doses_18plus_vax_pct"
+								}
+							},
+							{
+								"source": {
+									"path": "$['additional_doses_50plus']"
+								},
+								"sink": {
+									"name": "additional_doses_50plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['additional_doses_50plus_vax_pct']"
+								},
+								"sink": {
+									"name": "additional_doses_50plus_vax_pct"
+								}
+							},
+							{
+								"source": {
+									"path": "$['additional_doses_65plus']"
+								},
+								"sink": {
+									"name": "additional_doses_65plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['additional_doses_65plus_vax_pct']"
+								},
+								"sink": {
+									"name": "additional_doses_65plus_vax_pct"
+								}
+							},
+							{
+								"source": {
+									"path": "$['additional_doses_moderna']"
+								},
+								"sink": {
+									"name": "additional_doses_moderna"
+								}
+							},
+							{
+								"source": {
+									"path": "$['additional_doses_pfizer']"
+								},
+								"sink": {
+									"name": "additional_doses_pfizer"
+								}
+							},
+							{
+								"source": {
+									"path": "$['additional_doses_janssen']"
+								},
+								"sink": {
+									"name": "additional_doses_janssen"
+								}
+							},
+							{
+								"source": {
+									"path": "$['additional_doses_unk_manuf']"
+								},
+								"sink": {
+									"name": "additional_doses_unk_manuf"
+								}
+							},
+							{
+								"source": {
+									"path": "$['administered_dose1_recip_5plus']"
+								},
+								"sink": {
+									"name": "administered_dose1_recip_5plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['administered_dose1_recip_5pluspop_pct']"
+								},
+								"sink": {
+									"name": "administered_dose1_recip_5pluspop_pct"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_5plus']"
+								},
+								"sink": {
+									"name": "series_complete_5plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_5pluspop_pct']"
+								},
+								"sink": {
+									"name": "series_complete_5pluspop_pct"
+								}
+							},
+							{
+								"source": {
+									"path": "$['administered_5plus']"
+								},
+								"sink": {
+									"name": "administered_5plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['admin_per_100k_5plus']"
+								},
+								"sink": {
+									"name": "admin_per_100k_5plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['distributed_per_100k_5plus']"
+								},
+								"sink": {
+									"name": "distributed_per_100k_5plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_moderna_5plus']"
+								},
+								"sink": {
+									"name": "series_complete_moderna_5plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_pfizer_5plus']"
+								},
+								"sink": {
+									"name": "series_complete_pfizer_5plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_janssen_5plus']"
+								},
+								"sink": {
+									"name": "series_complete_janssen_5plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_unk_manuf_5plus']"
+								},
+								"sink": {
+									"name": "series_complete_unk_manuf_5plus"
+								}
+							}
+						],
+						"collectionReference": ""
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "cdc_vaccination",
+						"type": "DatasetReference",
+						"parameters": {
+							"queryParam": {
+								"value": "?date=@{formatDateTime(getPastTime(7, 'Day'), 'yyyy-MM-dd')}",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "cdc_vaccination_csv",
+						"type": "DatasetReference",
+						"parameters": {
+							"suffix": {
+								"value": "cdc_vaccination_@{formatDateTime(getPastTime(7, 'Day'), 'yyyy-MM-dd')}.csv",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			},
+			{
+				"name": "extract_latest_vaccination_pool",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "RestSource",
+						"httpRequestTimeout": "00:01:40",
+						"requestInterval": "00.00:00:00.010",
+						"requestMethod": "GET",
+						"paginationRules": {
+							"supportRFC5988": "true"
+						}
+					},
+					"sink": {
+						"type": "SqlPoolSink",
+						"preCopyScript": "TRUNCATE TABLE [Staging].[cdc_daily_vaccination]",
+						"writeBehavior": "Insert",
+						"sqlWriterUseTableLock": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"path": "$['date']"
+								},
+								"sink": {
+									"name": "date"
+								}
+							},
+							{
+								"source": {
+									"path": "$['mmwr_week']"
+								},
+								"sink": {
+									"name": "mmwr_week"
+								}
+							},
+							{
+								"source": {
+									"path": "$['location']"
+								},
+								"sink": {
+									"name": "location"
+								}
+							},
+							{
+								"source": {
+									"path": "$['distributed']"
+								},
+								"sink": {
+									"name": "distributed"
+								}
+							},
+							{
+								"source": {
+									"path": "$['distributed_janssen']"
+								},
+								"sink": {
+									"name": "distributed_janssen"
+								}
+							},
+							{
+								"source": {
+									"path": "$['distributed_moderna']"
+								},
+								"sink": {
+									"name": "distributed_moderna"
+								}
+							},
+							{
+								"source": {
+									"path": "$['distributed_pfizer']"
+								},
+								"sink": {
+									"name": "distributed_pfizer"
+								}
+							},
+							{
+								"source": {
+									"path": "$['distributed_unk_manuf']"
+								},
+								"sink": {
+									"name": "distributed_unk_manuf"
+								}
+							},
+							{
+								"source": {
+									"path": "$['dist_per_100k']"
+								},
+								"sink": {
+									"name": "dist_per_100k"
+								}
+							},
+							{
+								"source": {
+									"path": "$['distributed_per_100k_12plus']"
+								},
+								"sink": {
+									"name": "distributed_per_100k_12plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['distributed_per_100k_18plus']"
+								},
+								"sink": {
+									"name": "distributed_per_100k_18plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['distributed_per_100k_65plus']"
+								},
+								"sink": {
+									"name": "distributed_per_100k_65plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['administered']"
+								},
+								"sink": {
+									"name": "administered"
+								}
+							},
+							{
+								"source": {
+									"path": "$['administered_12plus']"
+								},
+								"sink": {
+									"name": "administered_12plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['administered_18plus']"
+								},
+								"sink": {
+									"name": "administered_18plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['administered_65plus']"
+								},
+								"sink": {
+									"name": "administered_65plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['administered_janssen']"
+								},
+								"sink": {
+									"name": "administered_janssen"
+								}
+							},
+							{
+								"source": {
+									"path": "$['administered_moderna']"
+								},
+								"sink": {
+									"name": "administered_moderna"
+								}
+							},
+							{
+								"source": {
+									"path": "$['administered_pfizer']"
+								},
+								"sink": {
+									"name": "administered_pfizer"
+								}
+							},
+							{
+								"source": {
+									"path": "$['administered_unk_manuf']"
+								},
+								"sink": {
+									"name": "administered_unk_manuf"
+								}
+							},
+							{
+								"source": {
+									"path": "$['admin_per_100k']"
+								},
+								"sink": {
+									"name": "admin_per_100k"
+								}
+							},
+							{
+								"source": {
+									"path": "$['admin_per_100k_12plus']"
+								},
+								"sink": {
+									"name": "admin_per_100k_12plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['admin_per_100k_18plus']"
+								},
+								"sink": {
+									"name": "admin_per_100k_18plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['admin_per_100k_65plus']"
+								},
+								"sink": {
+									"name": "admin_per_100k_65plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['recip_administered']"
+								},
+								"sink": {
+									"name": "recip_administered"
+								}
+							},
+							{
+								"source": {
+									"path": "$['administered_dose1_recip']"
+								},
+								"sink": {
+									"name": "administered_dose1_recip"
+								}
+							},
+							{
+								"source": {
+									"path": "$['administered_dose1_pop_pct']"
+								},
+								"sink": {
+									"name": "administered_dose1_pop_pct"
+								}
+							},
+							{
+								"source": {
+									"path": "$['administered_dose1_recip_1']"
+								},
+								"sink": {
+									"name": "administered_dose1_recip_1"
+								}
+							},
+							{
+								"source": {
+									"path": "$['administered_dose1_recip_2']"
+								},
+								"sink": {
+									"name": "administered_dose1_recip_2"
+								}
+							},
+							{
+								"source": {
+									"path": "$['administered_dose1_recip_3']"
+								},
+								"sink": {
+									"name": "administered_dose1_recip_3"
+								}
+							},
+							{
+								"source": {
+									"path": "$['administered_dose1_recip_4']"
+								},
+								"sink": {
+									"name": "administered_dose1_recip_4"
+								}
+							},
+							{
+								"source": {
+									"path": "$['administered_dose1_recip_5']"
+								},
+								"sink": {
+									"name": "administered_dose1_recip_5"
+								}
+							},
+							{
+								"source": {
+									"path": "$['administered_dose1_recip_6']"
+								},
+								"sink": {
+									"name": "administered_dose1_recip_6"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_yes']"
+								},
+								"sink": {
+									"name": "series_complete_yes"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_pop_pct']"
+								},
+								"sink": {
+									"name": "series_complete_pop_pct"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_12plus']"
+								},
+								"sink": {
+									"name": "series_complete_12plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_12pluspop']"
+								},
+								"sink": {
+									"name": "series_complete_12pluspop"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_18plus']"
+								},
+								"sink": {
+									"name": "series_complete_18plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_18pluspop']"
+								},
+								"sink": {
+									"name": "series_complete_18pluspop"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_65plus']"
+								},
+								"sink": {
+									"name": "series_complete_65plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_65pluspop']"
+								},
+								"sink": {
+									"name": "series_complete_65pluspop"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_janssen']"
+								},
+								"sink": {
+									"name": "series_complete_janssen"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_moderna']"
+								},
+								"sink": {
+									"name": "series_complete_moderna"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_pfizer']"
+								},
+								"sink": {
+									"name": "series_complete_pfizer"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_unk_manuf']"
+								},
+								"sink": {
+									"name": "series_complete_unk_manuf"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_janssen_12plus']"
+								},
+								"sink": {
+									"name": "series_complete_janssen_12plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_moderna_12plus']"
+								},
+								"sink": {
+									"name": "series_complete_moderna_12plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_pfizer_12plus']"
+								},
+								"sink": {
+									"name": "series_complete_pfizer_12plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_unk_manuf_1']"
+								},
+								"sink": {
+									"name": "series_complete_unk_manuf_1"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_janssen_18plus']"
+								},
+								"sink": {
+									"name": "series_complete_janssen_18plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_moderna_18plus']"
+								},
+								"sink": {
+									"name": "series_complete_moderna_18plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_pfizer_18plus']"
+								},
+								"sink": {
+									"name": "series_complete_pfizer_18plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_unk_manuf_2']"
+								},
+								"sink": {
+									"name": "series_complete_unk_manuf_2"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_janssen_65plus']"
+								},
+								"sink": {
+									"name": "series_complete_janssen_65plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_moderna_65plus']"
+								},
+								"sink": {
+									"name": "series_complete_moderna_65plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_pfizer_65plus']"
+								},
+								"sink": {
+									"name": "series_complete_pfizer_65plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_unk_manuf_3']"
+								},
+								"sink": {
+									"name": "series_complete_unk_manuf_3"
+								}
+							},
+							{
+								"source": {
+									"path": "$['additional_doses']"
+								},
+								"sink": {
+									"name": "additional_doses"
+								}
+							},
+							{
+								"source": {
+									"path": "$['additional_doses_vax_pct']"
+								},
+								"sink": {
+									"name": "additional_doses_vax_pct"
+								}
+							},
+							{
+								"source": {
+									"path": "$['additional_doses_12plus']"
+								},
+								"sink": {
+									"name": "additional_doses_12plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['additional_doses_12plus_vax_pct']"
+								},
+								"sink": {
+									"name": "additional_doses_12plus_vax_pct"
+								}
+							},
+							{
+								"source": {
+									"path": "$['additional_doses_18plus']"
+								},
+								"sink": {
+									"name": "additional_doses_18plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['additional_doses_18plus_vax_pct']"
+								},
+								"sink": {
+									"name": "additional_doses_18plus_vax_pct"
+								}
+							},
+							{
+								"source": {
+									"path": "$['additional_doses_50plus']"
+								},
+								"sink": {
+									"name": "additional_doses_50plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['additional_doses_50plus_vax_pct']"
+								},
+								"sink": {
+									"name": "additional_doses_50plus_vax_pct"
+								}
+							},
+							{
+								"source": {
+									"path": "$['additional_doses_65plus']"
+								},
+								"sink": {
+									"name": "additional_doses_65plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['additional_doses_65plus_vax_pct']"
+								},
+								"sink": {
+									"name": "additional_doses_65plus_vax_pct"
+								}
+							},
+							{
+								"source": {
+									"path": "$['additional_doses_moderna']"
+								},
+								"sink": {
+									"name": "additional_doses_moderna"
+								}
+							},
+							{
+								"source": {
+									"path": "$['additional_doses_pfizer']"
+								},
+								"sink": {
+									"name": "additional_doses_pfizer"
+								}
+							},
+							{
+								"source": {
+									"path": "$['additional_doses_janssen']"
+								},
+								"sink": {
+									"name": "additional_doses_janssen"
+								}
+							},
+							{
+								"source": {
+									"path": "$['additional_doses_unk_manuf']"
+								},
+								"sink": {
+									"name": "additional_doses_unk_manuf"
+								}
+							},
+							{
+								"source": {
+									"path": "$['administered_dose1_recip_5plus']"
+								},
+								"sink": {
+									"name": "administered_dose1_recip_5plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['administered_dose1_recip_5pluspop_pct']"
+								},
+								"sink": {
+									"name": "administered_dose1_recip_5pluspop_pct"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_5plus']"
+								},
+								"sink": {
+									"name": "series_complete_5plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_5pluspop_pct']"
+								},
+								"sink": {
+									"name": "series_complete_5pluspop_pct"
+								}
+							},
+							{
+								"source": {
+									"path": "$['administered_5plus']"
+								},
+								"sink": {
+									"name": "administered_5plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['admin_per_100k_5plus']"
+								},
+								"sink": {
+									"name": "admin_per_100k_5plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['distributed_per_100k_5plus']"
+								},
+								"sink": {
+									"name": "distributed_per_100k_5plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_moderna_5plus']"
+								},
+								"sink": {
+									"name": "series_complete_moderna_5plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_pfizer_5plus']"
+								},
+								"sink": {
+									"name": "series_complete_pfizer_5plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_janssen_5plus']"
+								},
+								"sink": {
+									"name": "series_complete_janssen_5plus"
+								}
+							},
+							{
+								"source": {
+									"path": "$['series_complete_unk_manuf_5plus']"
+								},
+								"sink": {
+									"name": "series_complete_unk_manuf_5plus"
+								}
+							}
+						],
+						"collectionReference": ""
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "cdc_vaccination",
+						"type": "DatasetReference",
+						"parameters": {
+							"queryParam": {
+								"value": "?date=@{formatDateTime(getPastTime(7, 'Day'), 'yyyy-MM-dd')}",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "pool_cdc_daily_vaccination",
+						"type": "DatasetReference"
+					}
+				]
+			}
+		],
+		"annotations": []
+	}
+}

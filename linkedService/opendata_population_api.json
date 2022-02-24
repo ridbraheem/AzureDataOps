@@ -1,0 +1,16 @@
+{
+	"name": "opendata_population_api",
+	"properties": {
+		"annotations": [],
+		"type": "RestService",
+		"typeProperties": {
+			"url": "https://public.opendatasoft.com/api/records/1.0/search/?dataset=us-cities-demographics&q=&rows=2891&facet=city&facet=state&facet=race",
+			"enableServerCertificateValidation": true,
+			"authenticationType": "Anonymous"
+		},
+		"connectVia": {
+			"referenceName": "AutoResolveIntegrationRuntime",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}

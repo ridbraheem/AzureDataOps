@@ -1,0 +1,87 @@
+{
+	"name": "pool_cdc_daily_cases",
+	"properties": {
+		"annotations": [],
+		"type": "SqlPoolTable",
+		"schema": [
+			{
+				"name": "submission_date",
+				"type": "nvarchar"
+			},
+			{
+				"name": "state",
+				"type": "nvarchar"
+			},
+			{
+				"name": "tot_cases",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "conf_cases",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "prob_cases",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "new_case",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "pnew_case",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "tot_death",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "conf_death",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "prob_death",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "new_death",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "pnew_death",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "created_at",
+				"type": "nvarchar"
+			},
+			{
+				"name": "consent_cases",
+				"type": "nvarchar"
+			},
+			{
+				"name": "consent_deaths",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "Staging",
+			"table": "cdc_daily_cases"
+		},
+		"sqlPool": {
+			"referenceName": "devpool",
+			"type": "SqlPoolReference"
+		}
+	}
+}

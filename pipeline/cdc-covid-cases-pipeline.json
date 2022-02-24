@@ -1,0 +1,275 @@
+{
+	"name": "cdc-covid-cases-pipeline",
+	"properties": {
+		"activities": [
+			{
+				"name": "extract_covid_cases_lake",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "RestSource",
+						"httpRequestTimeout": "00:01:40",
+						"requestInterval": "00.00:00:00.010",
+						"requestMethod": "GET",
+						"paginationRules": {
+							"supportRFC5988": "true"
+						}
+					},
+					"sink": {
+						"type": "DelimitedTextSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextWriteSettings",
+							"quoteAllText": true,
+							"fileExtension": ".txt"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"path": "$['submission_date']"
+								},
+								"sink": {
+									"name": "submission_date"
+								}
+							},
+							{
+								"source": {
+									"path": "$['state']"
+								},
+								"sink": {
+									"name": "state"
+								}
+							},
+							{
+								"source": {
+									"path": "$['tot_cases']"
+								},
+								"sink": {
+									"name": "tot_cases"
+								}
+							},
+							{
+								"source": {
+									"path": "$['new_case']"
+								},
+								"sink": {
+									"name": "new_case"
+								}
+							},
+							{
+								"source": {
+									"path": "$['pnew_case']"
+								},
+								"sink": {
+									"name": "pnew_case"
+								}
+							},
+							{
+								"source": {
+									"path": "$['tot_death']"
+								},
+								"sink": {
+									"name": "tot_death"
+								}
+							},
+							{
+								"source": {
+									"path": "$['new_death']"
+								},
+								"sink": {
+									"name": "new_death"
+								}
+							},
+							{
+								"source": {
+									"path": "$['pnew_death']"
+								},
+								"sink": {
+									"name": "pnew_death"
+								}
+							},
+							{
+								"source": {
+									"path": "$['created_at']"
+								},
+								"sink": {
+									"name": "created_at"
+								}
+							}
+						],
+						"collectionReference": "",
+						"mapComplexValuesToString": true
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "cdc_covid_cases",
+						"type": "DatasetReference",
+						"parameters": {
+							"queryParam": {
+								"value": "?submission_date=@{formatDateTime(getPastTime(7, 'Day'), 'yyyy-MM-dd')}",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "cdc_covid_cases_csv",
+						"type": "DatasetReference",
+						"parameters": {
+							"suffix": {
+								"value": "cdc_covid_case_@{formatDateTime(getPastTime(7, 'Day'), 'yyyy-MM-dd')}.csv",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			},
+			{
+				"name": "extract_covid_cases_pool",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "RestSource",
+						"httpRequestTimeout": "00:01:40",
+						"requestInterval": "00.00:00:00.010",
+						"requestMethod": "GET",
+						"paginationRules": {
+							"supportRFC5988": "true"
+						}
+					},
+					"sink": {
+						"type": "SqlPoolSink",
+						"preCopyScript": "TRUNCATE TABLE [Staging].[cdc_daily_vaccination]",
+						"writeBehavior": "Insert",
+						"sqlWriterUseTableLock": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"path": "$['submission_date']"
+								},
+								"sink": {
+									"name": "submission_date"
+								}
+							},
+							{
+								"source": {
+									"path": "$['state']"
+								},
+								"sink": {
+									"name": "state"
+								}
+							},
+							{
+								"source": {
+									"path": "$['tot_cases']"
+								},
+								"sink": {
+									"name": "tot_cases"
+								}
+							},
+							{
+								"source": {
+									"path": "$['new_case']"
+								},
+								"sink": {
+									"name": "new_case"
+								}
+							},
+							{
+								"source": {
+									"path": "$['pnew_case']"
+								},
+								"sink": {
+									"name": "pnew_case"
+								}
+							},
+							{
+								"source": {
+									"path": "$['tot_death']"
+								},
+								"sink": {
+									"name": "tot_death"
+								}
+							},
+							{
+								"source": {
+									"path": "$['new_death']"
+								},
+								"sink": {
+									"name": "new_death"
+								}
+							},
+							{
+								"source": {
+									"path": "$['pnew_death']"
+								},
+								"sink": {
+									"name": "pnew_death"
+								}
+							},
+							{
+								"source": {
+									"path": "$['created_at']"
+								},
+								"sink": {
+									"name": "created_at"
+								}
+							}
+						],
+						"collectionReference": "",
+						"mapComplexValuesToString": true
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "cdc_covid_cases",
+						"type": "DatasetReference",
+						"parameters": {
+							"queryParam": {
+								"value": "?submission_date=@{formatDateTime(getPastTime(7, 'Day'), 'yyyy-MM-dd')}",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "pool_cdc_daily_cases",
+						"type": "DatasetReference"
+					}
+				]
+			}
+		],
+		"annotations": []
+	}
+}

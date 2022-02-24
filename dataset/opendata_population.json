@@ -1,0 +1,12 @@
+{
+	"name": "opendata_population",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "opendata_population_api",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "RestResource",
+		"schema": []
+	}
+}

@@ -1,0 +1,17 @@
+{
+	"name": "SQL script 1",
+	"properties": {
+		"content": {
+			"query": "IF NOT EXISTS (SELECT * FROM sys.external_file_formats WHERE name = 'SynapseDelimitedTextFormat') \n\tCREATE EXTERNAL FILE FORMAT [SynapseDelimitedTextFormat] \n\tWITH ( FORMAT_TYPE = DELIMITEDTEXT ,\n\t       FORMAT_OPTIONS (\n\t\t\t FIELD_TERMINATOR = ',',\n\t\t\t USE_TYPE_DEFAULT = FALSE\n\t\t\t))\nGO\n\nIF NOT EXISTS (SELECT * FROM sys.external_data_sources WHERE name = 'synapsefiledev_synapsetrialdev_dfs_core_windows_net') \n\tCREATE EXTERNAL DATA SOURCE [synapsefiledev_synapsetrialdev_dfs_core_windows_net] \n\tWITH (\n\t\tLOCATION = 'abfss://synapsefiledev@synapsetrialdev.dfs.core.windows.net', \n\t\tTYPE = HADOOP \n\t)\nGO\n\nCREATE EXTERNAL TABLE [open_data_population] (\n\t[datasetid] nvarchar(4000),\n\t[recordid] nvarchar(4000),\n\t[total_population] bigint,\n\t[female_population] bigint,\n\t[count] bigint,\n\t[foreign_born] bigint,\n\t[state_code] nvarchar(4000),\n\t[average_household_size] float,\n\t[city] nvarchar(4000),\n\t[race] nvarchar(4000),\n\t[male_population] bigint,\n\t[median_age] float,\n\t[number_of_veterans] bigint,\n\t[state] nvarchar(4000)\n\t)\n\tWITH (\n\tLOCATION = 'opendata-population/open_population_2022-02-18.csv',\n\tDATA_SOURCE = [synapsefiledev_synapsetrialdev_dfs_core_windows_net],\n\tFILE_FORMAT = [SynapseDelimitedTextFormat]\n\t)\nGO\n\n\nSELECT TOP 100 * FROM [Staging].[open_data_population]\nGO",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "devpool",
+				"poolName": "devpool"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

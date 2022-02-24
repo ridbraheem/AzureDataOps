@@ -1,0 +1,23 @@
+{
+	"name": "cdc_covid_cases",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "cdc_covid_cases_api",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"queryParam": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "RestResource",
+		"typeProperties": {
+			"relativeUrl": {
+				"value": "@dataset().queryParam",
+				"type": "Expression"
+			}
+		},
+		"schema": []
+	}
+}

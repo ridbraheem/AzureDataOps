@@ -1,0 +1,229 @@
+{
+	"name": "pool_open_data_college",
+	"properties": {
+		"annotations": [],
+		"type": "SqlPoolTable",
+		"schema": [
+			{
+				"name": "datasetid",
+				"type": "nvarchar"
+			},
+			{
+				"name": "recordid",
+				"type": "nvarchar"
+			},
+			{
+				"name": "naics_desc",
+				"type": "nvarchar"
+			},
+			{
+				"name": "sector",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "tot_enroll",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "locale",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "zip",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "val_method",
+				"type": "nvarchar"
+			},
+			{
+				"name": "housing",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "hi_offer",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "merge_id",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "state",
+				"type": "nvarchar"
+			},
+			{
+				"name": "status",
+				"type": "nvarchar"
+			},
+			{
+				"name": "longitude",
+				"type": "float",
+				"precision": 15
+			},
+			{
+				"name": "naics_code",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "name",
+				"type": "nvarchar"
+			},
+			{
+				"name": "deg_grant",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "objectid",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "countyfips",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "alias",
+				"type": "nvarchar"
+			},
+			{
+				"name": "website",
+				"type": "nvarchar"
+			},
+			{
+				"name": "stfips",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "ft_enroll",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "ipedsid",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "dorm_cap",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "sourcedate",
+				"type": "datetime2",
+				"scale": 0
+			},
+			{
+				"name": "latitude",
+				"type": "float",
+				"precision": 15
+			},
+			{
+				"name": "address",
+				"type": "nvarchar"
+			},
+			{
+				"name": "county",
+				"type": "nvarchar"
+			},
+			{
+				"name": "population",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "level",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "city",
+				"type": "nvarchar"
+			},
+			{
+				"name": "val_date",
+				"type": "datetime2",
+				"scale": 0
+			},
+			{
+				"name": "telephone",
+				"type": "nvarchar"
+			},
+			{
+				"name": "size_set",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "cofips",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "close_date",
+				"type": "nvarchar"
+			},
+			{
+				"name": "tot_emp",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "type",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "country",
+				"type": "nvarchar"
+			},
+			{
+				"name": "pt_enroll",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "zip4",
+				"type": "nvarchar"
+			},
+			{
+				"name": "source",
+				"type": "nvarchar"
+			},
+			{
+				"name": "shelter_id",
+				"type": "nvarchar"
+			},
+			{
+				"name": "inst_size",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "record_timestamp",
+				"type": "datetime2",
+				"scale": 0
+			}
+		],
+		"typeProperties": {
+			"schema": "Staging",
+			"table": "open_data_college"
+		},
+		"sqlPool": {
+			"referenceName": "devpool",
+			"type": "SqlPoolReference"
+		}
+	}
+}
