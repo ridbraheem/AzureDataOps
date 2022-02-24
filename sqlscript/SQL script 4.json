@@ -1,0 +1,17 @@
+{
+	"name": "SQL script 4",
+	"properties": {
+		"content": {
+			"query": "SELECT [datasetid]\n,[recordid]\n,[total_population]\n,[female_population]\n,[count]\n,[foreign_born]\n,[state_code]\n,[average_household_size]\n,[city]\n,[race]\n,[male_population]\n,[median_age]\n,[number_of_veterans]\n,[state]\n FROM [Staging].[open_data_population];",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "devpool",
+				"poolName": "devpool"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
