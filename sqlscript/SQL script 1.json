@@ -1,0 +1,17 @@
+{
+	"name": "SQL script 1",
+	"properties": {
+		"content": {
+			"query": "SELECT TOP (100) [state_code]\n,[state]\n,[city]\n,[total_population]\n,[female_population]\n,[male_population]\n,[foreign_born]\n,[median_age]\n,[average_household_size]\n FROM [open_data].[dim_city_demographics]",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "devpool",
+				"poolName": "devpool"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
