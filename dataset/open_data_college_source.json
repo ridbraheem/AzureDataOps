@@ -1,0 +1,204 @@
+{
+	"name": "open_data_college_source",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "synapse-trial-dev-WorkspaceDefaultSqlServer",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlDWTable",
+		"schema": [
+			{
+				"name": "datasetid",
+				"type": "nvarchar"
+			},
+			{
+				"name": "recordid",
+				"type": "nvarchar"
+			},
+			{
+				"name": "naics_desc",
+				"type": "nvarchar"
+			},
+			{
+				"name": "sector",
+				"type": "nvarchar"
+			},
+			{
+				"name": "tot_enroll",
+				"type": "nvarchar"
+			},
+			{
+				"name": "locale",
+				"type": "nvarchar"
+			},
+			{
+				"name": "zip",
+				"type": "nvarchar"
+			},
+			{
+				"name": "val_method",
+				"type": "nvarchar"
+			},
+			{
+				"name": "housing",
+				"type": "nvarchar"
+			},
+			{
+				"name": "hi_offer",
+				"type": "nvarchar"
+			},
+			{
+				"name": "merge_id",
+				"type": "nvarchar"
+			},
+			{
+				"name": "state",
+				"type": "nvarchar"
+			},
+			{
+				"name": "status",
+				"type": "nvarchar"
+			},
+			{
+				"name": "longitude",
+				"type": "nvarchar"
+			},
+			{
+				"name": "naics_code",
+				"type": "nvarchar"
+			},
+			{
+				"name": "name",
+				"type": "nvarchar"
+			},
+			{
+				"name": "deg_grant",
+				"type": "nvarchar"
+			},
+			{
+				"name": "objectid",
+				"type": "nvarchar"
+			},
+			{
+				"name": "countyfips",
+				"type": "nvarchar"
+			},
+			{
+				"name": "alias",
+				"type": "nvarchar"
+			},
+			{
+				"name": "website",
+				"type": "nvarchar"
+			},
+			{
+				"name": "stfips",
+				"type": "nvarchar"
+			},
+			{
+				"name": "ft_enroll",
+				"type": "nvarchar"
+			},
+			{
+				"name": "ipedsid",
+				"type": "nvarchar"
+			},
+			{
+				"name": "dorm_cap",
+				"type": "nvarchar"
+			},
+			{
+				"name": "sourcedate",
+				"type": "datetime2",
+				"scale": 0
+			},
+			{
+				"name": "latitude",
+				"type": "nvarchar"
+			},
+			{
+				"name": "address",
+				"type": "nvarchar"
+			},
+			{
+				"name": "county",
+				"type": "nvarchar"
+			},
+			{
+				"name": "population",
+				"type": "nvarchar"
+			},
+			{
+				"name": "level",
+				"type": "nvarchar"
+			},
+			{
+				"name": "city",
+				"type": "nvarchar"
+			},
+			{
+				"name": "val_date",
+				"type": "datetime2",
+				"scale": 0
+			},
+			{
+				"name": "telephone",
+				"type": "nvarchar"
+			},
+			{
+				"name": "size_set",
+				"type": "nvarchar"
+			},
+			{
+				"name": "cofips",
+				"type": "nvarchar"
+			},
+			{
+				"name": "close_date",
+				"type": "nvarchar"
+			},
+			{
+				"name": "tot_emp",
+				"type": "nvarchar"
+			},
+			{
+				"name": "type",
+				"type": "nvarchar"
+			},
+			{
+				"name": "country",
+				"type": "nvarchar"
+			},
+			{
+				"name": "pt_enroll",
+				"type": "nvarchar"
+			},
+			{
+				"name": "zip4",
+				"type": "nvarchar"
+			},
+			{
+				"name": "source",
+				"type": "nvarchar"
+			},
+			{
+				"name": "shelter_id",
+				"type": "nvarchar"
+			},
+			{
+				"name": "inst_size",
+				"type": "nvarchar"
+			},
+			{
+				"name": "record_timestamp",
+				"type": "datetime2",
+				"scale": 0
+			}
+		],
+		"typeProperties": {
+			"schema": "Staging",
+			"table": "open_data_college"
+		}
+	}
+}

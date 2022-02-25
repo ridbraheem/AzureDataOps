@@ -1,0 +1,32 @@
+{
+	"name": "open_data_school_flow",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "open_data_college_source",
+						"type": "DatasetReference"
+					},
+					"name": "StageOpenDataCollegeSource"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "open_data_school_sink",
+						"type": "DatasetReference"
+					},
+					"name": "LoadToDimSchools"
+				}
+			],
+			"transformations": [
+				{
+					"name": "RemoveDuplicatesAndRenameColumns"
+				}
+			],
+			"script": "source(output(\n\t\tdatasetid as string,\n\t\trecordid as string,\n\t\tnaics_desc as string,\n\t\tsector as string,\n\t\ttot_enroll as string,\n\t\tlocale as string,\n\t\tzip as string,\n\t\tval_method as string,\n\t\thousing as string,\n\t\thi_offer as string,\n\t\tmerge_id as string,\n\t\tstate as string,\n\t\tstatus as string,\n\t\tlongitude as string,\n\t\tnaics_code as string,\n\t\tname as string,\n\t\tdeg_grant as string,\n\t\tobjectid as string,\n\t\tcountyfips as string,\n\t\talias as string,\n\t\twebsite as string,\n\t\tstfips as string,\n\t\tft_enroll as string,\n\t\tipedsid as string,\n\t\tdorm_cap as string,\n\t\tsourcedate as timestamp,\n\t\tlatitude as string,\n\t\taddress as string,\n\t\tcounty as string,\n\t\tpopulation as string,\n\t\tlevel as string,\n\t\tcity as string,\n\t\tval_date as timestamp,\n\t\ttelephone as string,\n\t\tsize_set as string,\n\t\tcofips as string,\n\t\tclose_date as string,\n\t\ttot_emp as string,\n\t\ttype as string,\n\t\tcountry as string,\n\t\tpt_enroll as string,\n\t\tzip4 as string,\n\t\tsource as string,\n\t\tshelter_id as string,\n\t\tinst_size as string,\n\t\trecord_timestamp as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tstaged: true) ~> StageOpenDataCollegeSource\nStageOpenDataCollegeSource select(mapColumn(\n\t\tdatasetid,\n\t\trecordid,\n\t\tnaics_desc,\n\t\tsector,\n\t\ttot_enroll,\n\t\tlocale,\n\t\tzip,\n\t\tval_method,\n\t\thousing,\n\t\thi_offer,\n\t\tmerge_id,\n\t\tstate_code = state,\n\t\tstatus,\n\t\tlongitude,\n\t\tnaics_code,\n\t\tname,\n\t\tdeg_grant,\n\t\tobjectid,\n\t\tcountyfips,\n\t\talias,\n\t\twebsite,\n\t\tstfips,\n\t\tft_enroll,\n\t\tipedsid,\n\t\tdorm_cap,\n\t\tsourcedate,\n\t\tlatitude,\n\t\taddress,\n\t\tcounty,\n\t\tpopulation,\n\t\tlevel,\n\t\tcity,\n\t\tval_date,\n\t\ttelephone,\n\t\tsize_set,\n\t\tcofips,\n\t\tclose_date,\n\t\ttot_emp,\n\t\ttype,\n\t\tcountry,\n\t\tpt_enroll,\n\t\tzip4,\n\t\tsource,\n\t\tshelter_id,\n\t\tinst_size,\n\t\trecord_timestamp\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> RemoveDuplicatesAndRenameColumns\nRemoveDuplicatesAndRenameColumns sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tstate_code as string,\n\t\tcity as string,\n\t\tschool_name as string,\n\t\tstatus as string,\n\t\twebsite as string,\n\t\ttelephone as string,\n\t\tlongitude as string,\n\t\tlatitude as string,\n\t\tpopulation as long,\n\t\tft_enroll as long,\n\t\tpt_enroll as long\n\t),\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\ttruncate:true,\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError',\n\tmapColumn(\n\t\tstate_code,\n\t\tcity,\n\t\tschool_name = name,\n\t\tstatus,\n\t\twebsite,\n\t\ttelephone,\n\t\tlongitude,\n\t\tlatitude,\n\t\tpopulation,\n\t\tft_enroll,\n\t\tpt_enroll\n\t)) ~> LoadToDimSchools"
+		}
+	}
+}

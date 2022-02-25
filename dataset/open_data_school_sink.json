@@ -1,0 +1,64 @@
+{
+	"name": "open_data_school_sink",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "synapse-trial-dev-WorkspaceDefaultSqlServer",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlDWTable",
+		"schema": [
+			{
+				"name": "state_code",
+				"type": "varchar"
+			},
+			{
+				"name": "city",
+				"type": "varchar"
+			},
+			{
+				"name": "school_name",
+				"type": "varchar"
+			},
+			{
+				"name": "status",
+				"type": "varchar"
+			},
+			{
+				"name": "website",
+				"type": "varchar"
+			},
+			{
+				"name": "telephone",
+				"type": "varchar"
+			},
+			{
+				"name": "longitude",
+				"type": "varchar"
+			},
+			{
+				"name": "latitude",
+				"type": "varchar"
+			},
+			{
+				"name": "population",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "ft_enroll",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "pt_enroll",
+				"type": "bigint",
+				"precision": 19
+			}
+		],
+		"typeProperties": {
+			"schema": "open_data",
+			"table": "dim_schools"
+		}
+	}
+}
