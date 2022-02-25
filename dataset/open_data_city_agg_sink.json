@@ -1,5 +1,5 @@
 {
-	"name": "AzureSynapseAnalyticsTable1",
+	"name": "open_data_city_agg_sink",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "synapse-trial-dev-WorkspaceDefaultSqlServer",
