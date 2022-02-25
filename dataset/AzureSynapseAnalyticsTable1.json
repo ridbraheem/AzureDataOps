@@ -1,0 +1,59 @@
+{
+	"name": "AzureSynapseAnalyticsTable1",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "synapse-trial-dev-WorkspaceDefaultSqlServer",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlDWTable",
+		"schema": [
+			{
+				"name": "state_code",
+				"type": "varchar"
+			},
+			{
+				"name": "state",
+				"type": "varchar"
+			},
+			{
+				"name": "city",
+				"type": "varchar"
+			},
+			{
+				"name": "total_population",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "female_population",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "male_population",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "foreign_born",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "median_age",
+				"type": "float",
+				"precision": 15
+			},
+			{
+				"name": "average_household_size",
+				"type": "float",
+				"precision": 15
+			}
+		],
+		"typeProperties": {
+			"schema": "open_data",
+			"table": "dim_city_demographics"
+		}
+	}
+}
