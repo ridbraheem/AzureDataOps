@@ -1,0 +1,30 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"workspaceName": {
+			"value": "synapse-trial-dev"
+		},
+		"synapse-trial-dev-WorkspaceDefaultSqlServer_connectionString": {
+			"value": ""
+		},
+		"cdc_covid_cases_api_properties_typeProperties_url": {
+			"value": "https://data.cdc.gov/resource/9mfq-cb36.json"
+		},
+		"cdc_vaccination_api_properties_typeProperties_url": {
+			"value": "https://data.cdc.gov/resource/unsk-b7fc.json"
+		},
+		"opendata_college_api_properties_typeProperties_url": {
+			"value": "https://public.opendatasoft.com/api/records/1.0/search/?dataset=us-colleges-and-universities&q=&rows=6857&facet=city&facet=state&facet=naics_desc"
+		},
+		"opendata_population_api_properties_typeProperties_url": {
+			"value": "https://public.opendatasoft.com/api/records/1.0/search/?dataset=us-cities-demographics&q=&rows=2891&facet=city&facet=state&facet=race"
+		},
+		"synapse-trial-dev-WorkspaceDefaultStorage_properties_typeProperties_url": {
+			"value": "https://synapsetrialdev.dfs.core.windows.net"
+		},
+		"testApiService_properties_typeProperties_url": {
+			"value": "https://api.covidtracking.com/v1/us/daily.json"
+		}
+	}
+}

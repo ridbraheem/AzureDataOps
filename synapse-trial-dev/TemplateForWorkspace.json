@@ -1,0 +1,4364 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"workspaceName": {
+			"type": "string",
+			"metadata": "Workspace name",
+			"defaultValue": "synapse-trial-dev"
+		},
+		"synapse-trial-dev-WorkspaceDefaultSqlServer_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'synapse-trial-dev-WorkspaceDefaultSqlServer'"
+		},
+		"cdc_covid_cases_api_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://data.cdc.gov/resource/9mfq-cb36.json"
+		},
+		"cdc_vaccination_api_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://data.cdc.gov/resource/unsk-b7fc.json"
+		},
+		"opendata_college_api_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://public.opendatasoft.com/api/records/1.0/search/?dataset=us-colleges-and-universities&q=&rows=6857&facet=city&facet=state&facet=naics_desc"
+		},
+		"opendata_population_api_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://public.opendatasoft.com/api/records/1.0/search/?dataset=us-cities-demographics&q=&rows=2891&facet=city&facet=state&facet=race"
+		},
+		"synapse-trial-dev-WorkspaceDefaultStorage_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://synapsetrialdev.dfs.core.windows.net"
+		},
+		"testApiService_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://api.covidtracking.com/v1/us/daily.json"
+		}
+	},
+	"variables": {
+		"workspaceId": "[concat('Microsoft.Synapse/workspaces/', parameters('workspaceName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('workspaceName'), '/cdc-covid-cases-pipeline')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"activities": [
+					{
+						"name": "extract_covid_cases_lake",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "RestSource",
+								"httpRequestTimeout": "00:01:40",
+								"requestInterval": "00.00:00:00.010",
+								"requestMethod": "GET",
+								"paginationRules": {
+									"supportRFC5988": "true"
+								}
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"path": "$['submission_date']"
+										},
+										"sink": {
+											"name": "submission_date"
+										}
+									},
+									{
+										"source": {
+											"path": "$['state']"
+										},
+										"sink": {
+											"name": "state"
+										}
+									},
+									{
+										"source": {
+											"path": "$['tot_cases']"
+										},
+										"sink": {
+											"name": "tot_cases"
+										}
+									},
+									{
+										"source": {
+											"path": "$['new_case']"
+										},
+										"sink": {
+											"name": "new_case"
+										}
+									},
+									{
+										"source": {
+											"path": "$['pnew_case']"
+										},
+										"sink": {
+											"name": "pnew_case"
+										}
+									},
+									{
+										"source": {
+											"path": "$['tot_death']"
+										},
+										"sink": {
+											"name": "tot_death"
+										}
+									},
+									{
+										"source": {
+											"path": "$['new_death']"
+										},
+										"sink": {
+											"name": "new_death"
+										}
+									},
+									{
+										"source": {
+											"path": "$['pnew_death']"
+										},
+										"sink": {
+											"name": "pnew_death"
+										}
+									},
+									{
+										"source": {
+											"path": "$['created_at']"
+										},
+										"sink": {
+											"name": "created_at"
+										}
+									}
+								],
+								"collectionReference": "",
+								"mapComplexValuesToString": true
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "cdc_covid_cases",
+								"type": "DatasetReference",
+								"parameters": {
+									"queryParam": {
+										"value": "?submission_date=@{formatDateTime(getPastTime(7, 'Day'), 'yyyy-MM-dd')}",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "cdc_covid_cases_csv",
+								"type": "DatasetReference",
+								"parameters": {
+									"suffix": {
+										"value": "cdc_covid_case_@{formatDateTime(getPastTime(7, 'Day'), 'yyyy-MM-dd')}.csv",
+										"type": "Expression"
+									}
+								}
+							}
+						]
+					},
+					{
+						"name": "extract_covid_cases_pool",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "RestSource",
+								"httpRequestTimeout": "00:01:40",
+								"requestInterval": "00.00:00:00.010",
+								"requestMethod": "GET",
+								"paginationRules": {
+									"supportRFC5988": "true"
+								}
+							},
+							"sink": {
+								"type": "SqlPoolSink",
+								"preCopyScript": "TRUNCATE TABLE [Staging].[cdc_daily_vaccination]",
+								"writeBehavior": "Insert",
+								"sqlWriterUseTableLock": false
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"path": "$['submission_date']"
+										},
+										"sink": {
+											"name": "submission_date"
+										}
+									},
+									{
+										"source": {
+											"path": "$['state']"
+										},
+										"sink": {
+											"name": "state"
+										}
+									},
+									{
+										"source": {
+											"path": "$['tot_cases']"
+										},
+										"sink": {
+											"name": "tot_cases"
+										}
+									},
+									{
+										"source": {
+											"path": "$['new_case']"
+										},
+										"sink": {
+											"name": "new_case"
+										}
+									},
+									{
+										"source": {
+											"path": "$['pnew_case']"
+										},
+										"sink": {
+											"name": "pnew_case"
+										}
+									},
+									{
+										"source": {
+											"path": "$['tot_death']"
+										},
+										"sink": {
+											"name": "tot_death"
+										}
+									},
+									{
+										"source": {
+											"path": "$['new_death']"
+										},
+										"sink": {
+											"name": "new_death"
+										}
+									},
+									{
+										"source": {
+											"path": "$['pnew_death']"
+										},
+										"sink": {
+											"name": "pnew_death"
+										}
+									},
+									{
+										"source": {
+											"path": "$['created_at']"
+										},
+										"sink": {
+											"name": "created_at"
+										}
+									}
+								],
+								"collectionReference": "",
+								"mapComplexValuesToString": true
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "cdc_covid_cases",
+								"type": "DatasetReference",
+								"parameters": {
+									"queryParam": {
+										"value": "?submission_date=@{formatDateTime(getPastTime(7, 'Day'), 'yyyy-MM-dd')}",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "pool_cdc_daily_cases",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/cdc_covid_cases')]",
+				"[concat(variables('workspaceId'), '/datasets/cdc_covid_cases_csv')]",
+				"[concat(variables('workspaceId'), '/datasets/pool_cdc_daily_cases')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/cdc-vaccination-pipeline')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"activities": [
+					{
+						"name": "extract_latest_vaccination_lake",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "RestSource",
+								"httpRequestTimeout": "00:01:40",
+								"requestInterval": "00.00:00:00.010",
+								"requestMethod": "GET",
+								"paginationRules": {
+									"supportRFC5988": "true"
+								}
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"path": "$['date']"
+										},
+										"sink": {
+											"name": "date"
+										}
+									},
+									{
+										"source": {
+											"path": "$['mmwr_week']"
+										},
+										"sink": {
+											"name": "mmwr_week"
+										}
+									},
+									{
+										"source": {
+											"path": "$['location']"
+										},
+										"sink": {
+											"name": "location"
+										}
+									},
+									{
+										"source": {
+											"path": "$['distributed']"
+										},
+										"sink": {
+											"name": "distributed"
+										}
+									},
+									{
+										"source": {
+											"path": "$['distributed_janssen']"
+										},
+										"sink": {
+											"name": "distributed_janssen"
+										}
+									},
+									{
+										"source": {
+											"path": "$['distributed_moderna']"
+										},
+										"sink": {
+											"name": "distributed_moderna"
+										}
+									},
+									{
+										"source": {
+											"path": "$['distributed_pfizer']"
+										},
+										"sink": {
+											"name": "distributed_pfizer"
+										}
+									},
+									{
+										"source": {
+											"path": "$['distributed_unk_manuf']"
+										},
+										"sink": {
+											"name": "distributed_unk_manuf"
+										}
+									},
+									{
+										"source": {
+											"path": "$['dist_per_100k']"
+										},
+										"sink": {
+											"name": "dist_per_100k"
+										}
+									},
+									{
+										"source": {
+											"path": "$['distributed_per_100k_12plus']"
+										},
+										"sink": {
+											"name": "distributed_per_100k_12plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['distributed_per_100k_18plus']"
+										},
+										"sink": {
+											"name": "distributed_per_100k_18plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['distributed_per_100k_65plus']"
+										},
+										"sink": {
+											"name": "distributed_per_100k_65plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['administered']"
+										},
+										"sink": {
+											"name": "administered"
+										}
+									},
+									{
+										"source": {
+											"path": "$['administered_12plus']"
+										},
+										"sink": {
+											"name": "administered_12plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['administered_18plus']"
+										},
+										"sink": {
+											"name": "administered_18plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['administered_65plus']"
+										},
+										"sink": {
+											"name": "administered_65plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['administered_janssen']"
+										},
+										"sink": {
+											"name": "administered_janssen"
+										}
+									},
+									{
+										"source": {
+											"path": "$['administered_moderna']"
+										},
+										"sink": {
+											"name": "administered_moderna"
+										}
+									},
+									{
+										"source": {
+											"path": "$['administered_pfizer']"
+										},
+										"sink": {
+											"name": "administered_pfizer"
+										}
+									},
+									{
+										"source": {
+											"path": "$['administered_unk_manuf']"
+										},
+										"sink": {
+											"name": "administered_unk_manuf"
+										}
+									},
+									{
+										"source": {
+											"path": "$['admin_per_100k']"
+										},
+										"sink": {
+											"name": "admin_per_100k"
+										}
+									},
+									{
+										"source": {
+											"path": "$['admin_per_100k_12plus']"
+										},
+										"sink": {
+											"name": "admin_per_100k_12plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['admin_per_100k_18plus']"
+										},
+										"sink": {
+											"name": "admin_per_100k_18plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['admin_per_100k_65plus']"
+										},
+										"sink": {
+											"name": "admin_per_100k_65plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['recip_administered']"
+										},
+										"sink": {
+											"name": "recip_administered"
+										}
+									},
+									{
+										"source": {
+											"path": "$['administered_dose1_recip']"
+										},
+										"sink": {
+											"name": "administered_dose1_recip"
+										}
+									},
+									{
+										"source": {
+											"path": "$['administered_dose1_pop_pct']"
+										},
+										"sink": {
+											"name": "administered_dose1_pop_pct"
+										}
+									},
+									{
+										"source": {
+											"path": "$['administered_dose1_recip_1']"
+										},
+										"sink": {
+											"name": "administered_dose1_recip_1"
+										}
+									},
+									{
+										"source": {
+											"path": "$['administered_dose1_recip_2']"
+										},
+										"sink": {
+											"name": "administered_dose1_recip_2"
+										}
+									},
+									{
+										"source": {
+											"path": "$['administered_dose1_recip_3']"
+										},
+										"sink": {
+											"name": "administered_dose1_recip_3"
+										}
+									},
+									{
+										"source": {
+											"path": "$['administered_dose1_recip_4']"
+										},
+										"sink": {
+											"name": "administered_dose1_recip_4"
+										}
+									},
+									{
+										"source": {
+											"path": "$['administered_dose1_recip_5']"
+										},
+										"sink": {
+											"name": "administered_dose1_recip_5"
+										}
+									},
+									{
+										"source": {
+											"path": "$['administered_dose1_recip_6']"
+										},
+										"sink": {
+											"name": "administered_dose1_recip_6"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_yes']"
+										},
+										"sink": {
+											"name": "series_complete_yes"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_pop_pct']"
+										},
+										"sink": {
+											"name": "series_complete_pop_pct"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_12plus']"
+										},
+										"sink": {
+											"name": "series_complete_12plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_12pluspop']"
+										},
+										"sink": {
+											"name": "series_complete_12pluspop"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_18plus']"
+										},
+										"sink": {
+											"name": "series_complete_18plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_18pluspop']"
+										},
+										"sink": {
+											"name": "series_complete_18pluspop"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_65plus']"
+										},
+										"sink": {
+											"name": "series_complete_65plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_65pluspop']"
+										},
+										"sink": {
+											"name": "series_complete_65pluspop"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_janssen']"
+										},
+										"sink": {
+											"name": "series_complete_janssen"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_moderna']"
+										},
+										"sink": {
+											"name": "series_complete_moderna"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_pfizer']"
+										},
+										"sink": {
+											"name": "series_complete_pfizer"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_unk_manuf']"
+										},
+										"sink": {
+											"name": "series_complete_unk_manuf"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_janssen_12plus']"
+										},
+										"sink": {
+											"name": "series_complete_janssen_12plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_moderna_12plus']"
+										},
+										"sink": {
+											"name": "series_complete_moderna_12plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_pfizer_12plus']"
+										},
+										"sink": {
+											"name": "series_complete_pfizer_12plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_unk_manuf_1']"
+										},
+										"sink": {
+											"name": "series_complete_unk_manuf_1"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_janssen_18plus']"
+										},
+										"sink": {
+											"name": "series_complete_janssen_18plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_moderna_18plus']"
+										},
+										"sink": {
+											"name": "series_complete_moderna_18plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_pfizer_18plus']"
+										},
+										"sink": {
+											"name": "series_complete_pfizer_18plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_unk_manuf_2']"
+										},
+										"sink": {
+											"name": "series_complete_unk_manuf_2"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_janssen_65plus']"
+										},
+										"sink": {
+											"name": "series_complete_janssen_65plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_moderna_65plus']"
+										},
+										"sink": {
+											"name": "series_complete_moderna_65plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_pfizer_65plus']"
+										},
+										"sink": {
+											"name": "series_complete_pfizer_65plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_unk_manuf_3']"
+										},
+										"sink": {
+											"name": "series_complete_unk_manuf_3"
+										}
+									},
+									{
+										"source": {
+											"path": "$['additional_doses']"
+										},
+										"sink": {
+											"name": "additional_doses"
+										}
+									},
+									{
+										"source": {
+											"path": "$['additional_doses_vax_pct']"
+										},
+										"sink": {
+											"name": "additional_doses_vax_pct"
+										}
+									},
+									{
+										"source": {
+											"path": "$['additional_doses_12plus']"
+										},
+										"sink": {
+											"name": "additional_doses_12plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['additional_doses_12plus_vax_pct']"
+										},
+										"sink": {
+											"name": "additional_doses_12plus_vax_pct"
+										}
+									},
+									{
+										"source": {
+											"path": "$['additional_doses_18plus']"
+										},
+										"sink": {
+											"name": "additional_doses_18plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['additional_doses_18plus_vax_pct']"
+										},
+										"sink": {
+											"name": "additional_doses_18plus_vax_pct"
+										}
+									},
+									{
+										"source": {
+											"path": "$['additional_doses_50plus']"
+										},
+										"sink": {
+											"name": "additional_doses_50plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['additional_doses_50plus_vax_pct']"
+										},
+										"sink": {
+											"name": "additional_doses_50plus_vax_pct"
+										}
+									},
+									{
+										"source": {
+											"path": "$['additional_doses_65plus']"
+										},
+										"sink": {
+											"name": "additional_doses_65plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['additional_doses_65plus_vax_pct']"
+										},
+										"sink": {
+											"name": "additional_doses_65plus_vax_pct"
+										}
+									},
+									{
+										"source": {
+											"path": "$['additional_doses_moderna']"
+										},
+										"sink": {
+											"name": "additional_doses_moderna"
+										}
+									},
+									{
+										"source": {
+											"path": "$['additional_doses_pfizer']"
+										},
+										"sink": {
+											"name": "additional_doses_pfizer"
+										}
+									},
+									{
+										"source": {
+											"path": "$['additional_doses_janssen']"
+										},
+										"sink": {
+											"name": "additional_doses_janssen"
+										}
+									},
+									{
+										"source": {
+											"path": "$['additional_doses_unk_manuf']"
+										},
+										"sink": {
+											"name": "additional_doses_unk_manuf"
+										}
+									},
+									{
+										"source": {
+											"path": "$['administered_dose1_recip_5plus']"
+										},
+										"sink": {
+											"name": "administered_dose1_recip_5plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['administered_dose1_recip_5pluspop_pct']"
+										},
+										"sink": {
+											"name": "administered_dose1_recip_5pluspop_pct"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_5plus']"
+										},
+										"sink": {
+											"name": "series_complete_5plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_5pluspop_pct']"
+										},
+										"sink": {
+											"name": "series_complete_5pluspop_pct"
+										}
+									},
+									{
+										"source": {
+											"path": "$['administered_5plus']"
+										},
+										"sink": {
+											"name": "administered_5plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['admin_per_100k_5plus']"
+										},
+										"sink": {
+											"name": "admin_per_100k_5plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['distributed_per_100k_5plus']"
+										},
+										"sink": {
+											"name": "distributed_per_100k_5plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_moderna_5plus']"
+										},
+										"sink": {
+											"name": "series_complete_moderna_5plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_pfizer_5plus']"
+										},
+										"sink": {
+											"name": "series_complete_pfizer_5plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_janssen_5plus']"
+										},
+										"sink": {
+											"name": "series_complete_janssen_5plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_unk_manuf_5plus']"
+										},
+										"sink": {
+											"name": "series_complete_unk_manuf_5plus"
+										}
+									}
+								],
+								"collectionReference": ""
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "cdc_vaccination",
+								"type": "DatasetReference",
+								"parameters": {
+									"queryParam": {
+										"value": "?date=@{formatDateTime(getPastTime(7, 'Day'), 'yyyy-MM-dd')}",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "cdc_vaccination_csv",
+								"type": "DatasetReference",
+								"parameters": {
+									"suffix": {
+										"value": "cdc_vaccination_@{formatDateTime(getPastTime(7, 'Day'), 'yyyy-MM-dd')}.csv",
+										"type": "Expression"
+									}
+								}
+							}
+						]
+					},
+					{
+						"name": "extract_latest_vaccination_pool",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "RestSource",
+								"httpRequestTimeout": "00:01:40",
+								"requestInterval": "00.00:00:00.010",
+								"requestMethod": "GET",
+								"paginationRules": {
+									"supportRFC5988": "true"
+								}
+							},
+							"sink": {
+								"type": "SqlPoolSink",
+								"preCopyScript": "TRUNCATE TABLE [Staging].[cdc_daily_vaccination]",
+								"writeBehavior": "Insert",
+								"sqlWriterUseTableLock": false
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"path": "$['date']"
+										},
+										"sink": {
+											"name": "date"
+										}
+									},
+									{
+										"source": {
+											"path": "$['mmwr_week']"
+										},
+										"sink": {
+											"name": "mmwr_week"
+										}
+									},
+									{
+										"source": {
+											"path": "$['location']"
+										},
+										"sink": {
+											"name": "location"
+										}
+									},
+									{
+										"source": {
+											"path": "$['distributed']"
+										},
+										"sink": {
+											"name": "distributed"
+										}
+									},
+									{
+										"source": {
+											"path": "$['distributed_janssen']"
+										},
+										"sink": {
+											"name": "distributed_janssen"
+										}
+									},
+									{
+										"source": {
+											"path": "$['distributed_moderna']"
+										},
+										"sink": {
+											"name": "distributed_moderna"
+										}
+									},
+									{
+										"source": {
+											"path": "$['distributed_pfizer']"
+										},
+										"sink": {
+											"name": "distributed_pfizer"
+										}
+									},
+									{
+										"source": {
+											"path": "$['distributed_unk_manuf']"
+										},
+										"sink": {
+											"name": "distributed_unk_manuf"
+										}
+									},
+									{
+										"source": {
+											"path": "$['dist_per_100k']"
+										},
+										"sink": {
+											"name": "dist_per_100k"
+										}
+									},
+									{
+										"source": {
+											"path": "$['distributed_per_100k_12plus']"
+										},
+										"sink": {
+											"name": "distributed_per_100k_12plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['distributed_per_100k_18plus']"
+										},
+										"sink": {
+											"name": "distributed_per_100k_18plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['distributed_per_100k_65plus']"
+										},
+										"sink": {
+											"name": "distributed_per_100k_65plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['administered']"
+										},
+										"sink": {
+											"name": "administered"
+										}
+									},
+									{
+										"source": {
+											"path": "$['administered_12plus']"
+										},
+										"sink": {
+											"name": "administered_12plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['administered_18plus']"
+										},
+										"sink": {
+											"name": "administered_18plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['administered_65plus']"
+										},
+										"sink": {
+											"name": "administered_65plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['administered_janssen']"
+										},
+										"sink": {
+											"name": "administered_janssen"
+										}
+									},
+									{
+										"source": {
+											"path": "$['administered_moderna']"
+										},
+										"sink": {
+											"name": "administered_moderna"
+										}
+									},
+									{
+										"source": {
+											"path": "$['administered_pfizer']"
+										},
+										"sink": {
+											"name": "administered_pfizer"
+										}
+									},
+									{
+										"source": {
+											"path": "$['administered_unk_manuf']"
+										},
+										"sink": {
+											"name": "administered_unk_manuf"
+										}
+									},
+									{
+										"source": {
+											"path": "$['admin_per_100k']"
+										},
+										"sink": {
+											"name": "admin_per_100k"
+										}
+									},
+									{
+										"source": {
+											"path": "$['admin_per_100k_12plus']"
+										},
+										"sink": {
+											"name": "admin_per_100k_12plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['admin_per_100k_18plus']"
+										},
+										"sink": {
+											"name": "admin_per_100k_18plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['admin_per_100k_65plus']"
+										},
+										"sink": {
+											"name": "admin_per_100k_65plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['recip_administered']"
+										},
+										"sink": {
+											"name": "recip_administered"
+										}
+									},
+									{
+										"source": {
+											"path": "$['administered_dose1_recip']"
+										},
+										"sink": {
+											"name": "administered_dose1_recip"
+										}
+									},
+									{
+										"source": {
+											"path": "$['administered_dose1_pop_pct']"
+										},
+										"sink": {
+											"name": "administered_dose1_pop_pct"
+										}
+									},
+									{
+										"source": {
+											"path": "$['administered_dose1_recip_1']"
+										},
+										"sink": {
+											"name": "administered_dose1_recip_1"
+										}
+									},
+									{
+										"source": {
+											"path": "$['administered_dose1_recip_2']"
+										},
+										"sink": {
+											"name": "administered_dose1_recip_2"
+										}
+									},
+									{
+										"source": {
+											"path": "$['administered_dose1_recip_3']"
+										},
+										"sink": {
+											"name": "administered_dose1_recip_3"
+										}
+									},
+									{
+										"source": {
+											"path": "$['administered_dose1_recip_4']"
+										},
+										"sink": {
+											"name": "administered_dose1_recip_4"
+										}
+									},
+									{
+										"source": {
+											"path": "$['administered_dose1_recip_5']"
+										},
+										"sink": {
+											"name": "administered_dose1_recip_5"
+										}
+									},
+									{
+										"source": {
+											"path": "$['administered_dose1_recip_6']"
+										},
+										"sink": {
+											"name": "administered_dose1_recip_6"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_yes']"
+										},
+										"sink": {
+											"name": "series_complete_yes"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_pop_pct']"
+										},
+										"sink": {
+											"name": "series_complete_pop_pct"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_12plus']"
+										},
+										"sink": {
+											"name": "series_complete_12plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_12pluspop']"
+										},
+										"sink": {
+											"name": "series_complete_12pluspop"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_18plus']"
+										},
+										"sink": {
+											"name": "series_complete_18plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_18pluspop']"
+										},
+										"sink": {
+											"name": "series_complete_18pluspop"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_65plus']"
+										},
+										"sink": {
+											"name": "series_complete_65plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_65pluspop']"
+										},
+										"sink": {
+											"name": "series_complete_65pluspop"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_janssen']"
+										},
+										"sink": {
+											"name": "series_complete_janssen"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_moderna']"
+										},
+										"sink": {
+											"name": "series_complete_moderna"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_pfizer']"
+										},
+										"sink": {
+											"name": "series_complete_pfizer"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_unk_manuf']"
+										},
+										"sink": {
+											"name": "series_complete_unk_manuf"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_janssen_12plus']"
+										},
+										"sink": {
+											"name": "series_complete_janssen_12plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_moderna_12plus']"
+										},
+										"sink": {
+											"name": "series_complete_moderna_12plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_pfizer_12plus']"
+										},
+										"sink": {
+											"name": "series_complete_pfizer_12plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_unk_manuf_1']"
+										},
+										"sink": {
+											"name": "series_complete_unk_manuf_1"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_janssen_18plus']"
+										},
+										"sink": {
+											"name": "series_complete_janssen_18plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_moderna_18plus']"
+										},
+										"sink": {
+											"name": "series_complete_moderna_18plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_pfizer_18plus']"
+										},
+										"sink": {
+											"name": "series_complete_pfizer_18plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_unk_manuf_2']"
+										},
+										"sink": {
+											"name": "series_complete_unk_manuf_2"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_janssen_65plus']"
+										},
+										"sink": {
+											"name": "series_complete_janssen_65plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_moderna_65plus']"
+										},
+										"sink": {
+											"name": "series_complete_moderna_65plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_pfizer_65plus']"
+										},
+										"sink": {
+											"name": "series_complete_pfizer_65plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_unk_manuf_3']"
+										},
+										"sink": {
+											"name": "series_complete_unk_manuf_3"
+										}
+									},
+									{
+										"source": {
+											"path": "$['additional_doses']"
+										},
+										"sink": {
+											"name": "additional_doses"
+										}
+									},
+									{
+										"source": {
+											"path": "$['additional_doses_vax_pct']"
+										},
+										"sink": {
+											"name": "additional_doses_vax_pct"
+										}
+									},
+									{
+										"source": {
+											"path": "$['additional_doses_12plus']"
+										},
+										"sink": {
+											"name": "additional_doses_12plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['additional_doses_12plus_vax_pct']"
+										},
+										"sink": {
+											"name": "additional_doses_12plus_vax_pct"
+										}
+									},
+									{
+										"source": {
+											"path": "$['additional_doses_18plus']"
+										},
+										"sink": {
+											"name": "additional_doses_18plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['additional_doses_18plus_vax_pct']"
+										},
+										"sink": {
+											"name": "additional_doses_18plus_vax_pct"
+										}
+									},
+									{
+										"source": {
+											"path": "$['additional_doses_50plus']"
+										},
+										"sink": {
+											"name": "additional_doses_50plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['additional_doses_50plus_vax_pct']"
+										},
+										"sink": {
+											"name": "additional_doses_50plus_vax_pct"
+										}
+									},
+									{
+										"source": {
+											"path": "$['additional_doses_65plus']"
+										},
+										"sink": {
+											"name": "additional_doses_65plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['additional_doses_65plus_vax_pct']"
+										},
+										"sink": {
+											"name": "additional_doses_65plus_vax_pct"
+										}
+									},
+									{
+										"source": {
+											"path": "$['additional_doses_moderna']"
+										},
+										"sink": {
+											"name": "additional_doses_moderna"
+										}
+									},
+									{
+										"source": {
+											"path": "$['additional_doses_pfizer']"
+										},
+										"sink": {
+											"name": "additional_doses_pfizer"
+										}
+									},
+									{
+										"source": {
+											"path": "$['additional_doses_janssen']"
+										},
+										"sink": {
+											"name": "additional_doses_janssen"
+										}
+									},
+									{
+										"source": {
+											"path": "$['additional_doses_unk_manuf']"
+										},
+										"sink": {
+											"name": "additional_doses_unk_manuf"
+										}
+									},
+									{
+										"source": {
+											"path": "$['administered_dose1_recip_5plus']"
+										},
+										"sink": {
+											"name": "administered_dose1_recip_5plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['administered_dose1_recip_5pluspop_pct']"
+										},
+										"sink": {
+											"name": "administered_dose1_recip_5pluspop_pct"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_5plus']"
+										},
+										"sink": {
+											"name": "series_complete_5plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_5pluspop_pct']"
+										},
+										"sink": {
+											"name": "series_complete_5pluspop_pct"
+										}
+									},
+									{
+										"source": {
+											"path": "$['administered_5plus']"
+										},
+										"sink": {
+											"name": "administered_5plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['admin_per_100k_5plus']"
+										},
+										"sink": {
+											"name": "admin_per_100k_5plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['distributed_per_100k_5plus']"
+										},
+										"sink": {
+											"name": "distributed_per_100k_5plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_moderna_5plus']"
+										},
+										"sink": {
+											"name": "series_complete_moderna_5plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_pfizer_5plus']"
+										},
+										"sink": {
+											"name": "series_complete_pfizer_5plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_janssen_5plus']"
+										},
+										"sink": {
+											"name": "series_complete_janssen_5plus"
+										}
+									},
+									{
+										"source": {
+											"path": "$['series_complete_unk_manuf_5plus']"
+										},
+										"sink": {
+											"name": "series_complete_unk_manuf_5plus"
+										}
+									}
+								],
+								"collectionReference": ""
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "cdc_vaccination",
+								"type": "DatasetReference",
+								"parameters": {
+									"queryParam": {
+										"value": "?date=@{formatDateTime(getPastTime(7, 'Day'), 'yyyy-MM-dd')}",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "pool_cdc_daily_vaccination",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/cdc_vaccination')]",
+				"[concat(variables('workspaceId'), '/datasets/cdc_vaccination_csv')]",
+				"[concat(variables('workspaceId'), '/datasets/pool_cdc_daily_vaccination')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/opendata-college-pipeline')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"activities": [
+					{
+						"name": "extract_opendata_college",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "RestSource",
+								"httpRequestTimeout": "00:01:40",
+								"requestInterval": "00.00:00:00.010",
+								"requestMethod": "GET",
+								"paginationRules": {
+									"supportRFC5988": "true"
+								}
+							},
+							"sink": {
+								"type": "SqlPoolSink",
+								"preCopyScript": "TRUNCATE TABLE [Staging].[open_data_college]",
+								"writeBehavior": "Insert",
+								"sqlWriterUseTableLock": false
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"path": "['datasetid']"
+										},
+										"sink": {
+											"name": "datasetid"
+										}
+									},
+									{
+										"source": {
+											"path": "['recordid']"
+										},
+										"sink": {
+											"name": "recordid"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['naics_desc']"
+										},
+										"sink": {
+											"name": "naics_desc"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['sector']"
+										},
+										"sink": {
+											"name": "sector"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['tot_enroll']"
+										},
+										"sink": {
+											"name": "tot_enroll"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['locale']"
+										},
+										"sink": {
+											"name": "locale"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['zip']"
+										},
+										"sink": {
+											"name": "zip"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['val_method']"
+										},
+										"sink": {
+											"name": "val_method"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['housing']"
+										},
+										"sink": {
+											"name": "housing"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['hi_offer']"
+										},
+										"sink": {
+											"name": "hi_offer"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['merge_id']"
+										},
+										"sink": {
+											"name": "merge_id"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['state']"
+										},
+										"sink": {
+											"name": "state"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['status']"
+										},
+										"sink": {
+											"name": "status"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['longitude']"
+										},
+										"sink": {
+											"name": "longitude"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['naics_code']"
+										},
+										"sink": {
+											"name": "naics_code"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['name']"
+										},
+										"sink": {
+											"name": "name"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['deg_grant']"
+										},
+										"sink": {
+											"name": "deg_grant"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['objectid']"
+										},
+										"sink": {
+											"name": "objectid"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['countyfips']"
+										},
+										"sink": {
+											"name": "countyfips"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['alias']"
+										},
+										"sink": {
+											"name": "alias"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['website']"
+										},
+										"sink": {
+											"name": "website"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['stfips']"
+										},
+										"sink": {
+											"name": "stfips"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['ft_enroll']"
+										},
+										"sink": {
+											"name": "ft_enroll"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['ipedsid']"
+										},
+										"sink": {
+											"name": "ipedsid"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['dorm_cap']"
+										},
+										"sink": {
+											"name": "dorm_cap"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['sourcedate']"
+										},
+										"sink": {
+											"name": "sourcedate"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['latitude']"
+										},
+										"sink": {
+											"name": "latitude"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['address']"
+										},
+										"sink": {
+											"name": "address"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['county']"
+										},
+										"sink": {
+											"name": "county"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['population']"
+										},
+										"sink": {
+											"name": "population"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['level']"
+										},
+										"sink": {
+											"name": "level"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['city']"
+										},
+										"sink": {
+											"name": "city"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['val_date']"
+										},
+										"sink": {
+											"name": "val_date"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['telephone']"
+										},
+										"sink": {
+											"name": "telephone"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['size_set']"
+										},
+										"sink": {
+											"name": "size_set"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['cofips']"
+										},
+										"sink": {
+											"name": "cofips"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['close_date']"
+										},
+										"sink": {
+											"name": "close_date"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['tot_emp']"
+										},
+										"sink": {
+											"name": "tot_emp"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['type']"
+										},
+										"sink": {
+											"name": "type"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['country']"
+										},
+										"sink": {
+											"name": "country"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['pt_enroll']"
+										},
+										"sink": {
+											"name": "pt_enroll"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['zip4']"
+										},
+										"sink": {
+											"name": "zip4"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['source']"
+										},
+										"sink": {
+											"name": "source"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['shelter_id']"
+										},
+										"sink": {
+											"name": "shelter_id"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['inst_size']"
+										},
+										"sink": {
+											"name": "inst_size"
+										}
+									},
+									{
+										"source": {
+											"path": "['record_timestamp']"
+										},
+										"sink": {
+											"name": "record_timestamp"
+										}
+									}
+								],
+								"collectionReference": "$['records']"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "opendata_college",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "pool_open_data_college",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/opendata_college')]",
+				"[concat(variables('workspaceId'), '/datasets/pool_open_data_college')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/opendata-population-pipeline')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"activities": [
+					{
+						"name": "extract_opendata_population",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "RestSource",
+								"httpRequestTimeout": "00:01:40",
+								"requestInterval": "00.00:00:00.010",
+								"requestMethod": "GET",
+								"paginationRules": {
+									"supportRFC5988": "true"
+								}
+							},
+							"sink": {
+								"type": "SqlPoolSink",
+								"preCopyScript": "TRUNCATE TABLE [Staging].[open_data_population]",
+								"writeBehavior": "Insert",
+								"sqlWriterUseTableLock": false
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"path": "['datasetid']"
+										},
+										"sink": {
+											"name": "datasetid"
+										}
+									},
+									{
+										"source": {
+											"path": "['recordid']"
+										},
+										"sink": {
+											"name": "recordid"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['total_population']"
+										},
+										"sink": {
+											"name": "total_population"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['female_population']"
+										},
+										"sink": {
+											"name": "female_population"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['count']"
+										},
+										"sink": {
+											"name": "count"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['foreign_born']"
+										},
+										"sink": {
+											"name": "foreign_born"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['state_code']"
+										},
+										"sink": {
+											"name": "state_code"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['average_household_size']"
+										},
+										"sink": {
+											"name": "average_household_size"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['city']"
+										},
+										"sink": {
+											"name": "city"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['race']"
+										},
+										"sink": {
+											"name": "race"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['male_population']"
+										},
+										"sink": {
+											"name": "male_population"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['median_age']"
+										},
+										"sink": {
+											"name": "median_age"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['number_of_veterans']"
+										},
+										"sink": {
+											"name": "number_of_veterans"
+										}
+									},
+									{
+										"source": {
+											"path": "['fields']['state']"
+										},
+										"sink": {
+											"name": "state"
+										}
+									}
+								],
+								"collectionReference": "$['records']"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "opendata_population",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "pool_open_data_population",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					},
+					{
+						"name": "LoadDimDemographics",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "extract_opendata_population",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "1.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "open_data_population_dataflow",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"StageOpenDataPopulation": {},
+									"LoadToDimStatePopulation": {},
+									"LoadToDimCityPopulation": {}
+								}
+							},
+							"staging": {
+								"linkedService": {
+									"referenceName": "synapse-trial-dev-WorkspaceDefaultStorage",
+									"type": "LinkedServiceReference"
+								},
+								"folderPath": "synapsefiledev/opendata-population"
+							},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/opendata_population')]",
+				"[concat(variables('workspaceId'), '/datasets/pool_open_data_population')]",
+				"[concat(variables('workspaceId'), '/dataflows/open_data_population_dataflow')]",
+				"[concat(variables('workspaceId'), '/linkedServices/synapse-trial-dev-WorkspaceDefaultStorage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/test-pipeline')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy data1",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "RestSource",
+								"httpRequestTimeout": "00:01:40",
+								"requestInterval": "00.00:00:00.010",
+								"requestMethod": "GET",
+								"paginationRules": {
+									"supportRFC5988": "true"
+								}
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"path": "$['date']"
+										},
+										"sink": {
+											"name": "date"
+										}
+									},
+									{
+										"source": {
+											"path": "$['states']"
+										},
+										"sink": {
+											"name": "states"
+										}
+									},
+									{
+										"source": {
+											"path": "$['positive']"
+										},
+										"sink": {
+											"name": "positive"
+										}
+									},
+									{
+										"source": {
+											"path": "$['negative']"
+										},
+										"sink": {
+											"name": "negative"
+										}
+									},
+									{
+										"source": {
+											"path": "$['pending']"
+										},
+										"sink": {
+											"name": "pending"
+										}
+									},
+									{
+										"source": {
+											"path": "$['hospitalizedCurrently']"
+										},
+										"sink": {
+											"name": "hospitalizedCurrently"
+										}
+									},
+									{
+										"source": {
+											"path": "$['hospitalizedCumulative']"
+										},
+										"sink": {
+											"name": "hospitalizedCumulative"
+										}
+									},
+									{
+										"source": {
+											"path": "$['inIcuCurrently']"
+										},
+										"sink": {
+											"name": "inIcuCurrently"
+										}
+									},
+									{
+										"source": {
+											"path": "$['inIcuCumulative']"
+										},
+										"sink": {
+											"name": "inIcuCumulative"
+										}
+									},
+									{
+										"source": {
+											"path": "$['onVentilatorCurrently']"
+										},
+										"sink": {
+											"name": "onVentilatorCurrently"
+										}
+									},
+									{
+										"source": {
+											"path": "$['onVentilatorCumulative']"
+										},
+										"sink": {
+											"name": "onVentilatorCumulative"
+										}
+									},
+									{
+										"source": {
+											"path": "$['dateChecked']"
+										},
+										"sink": {
+											"name": "dateChecked"
+										}
+									},
+									{
+										"source": {
+											"path": "$['death']"
+										},
+										"sink": {
+											"name": "death"
+										}
+									},
+									{
+										"source": {
+											"path": "$['hospitalized']"
+										},
+										"sink": {
+											"name": "hospitalized"
+										}
+									},
+									{
+										"source": {
+											"path": "$['totalTestResults']"
+										},
+										"sink": {
+											"name": "totalTestResults"
+										}
+									},
+									{
+										"source": {
+											"path": "$['lastModified']"
+										},
+										"sink": {
+											"name": "lastModified"
+										}
+									},
+									{
+										"source": {
+											"path": "$['total']"
+										},
+										"sink": {
+											"name": "total"
+										}
+									},
+									{
+										"source": {
+											"path": "$['posNeg']"
+										},
+										"sink": {
+											"name": "posNeg"
+										}
+									},
+									{
+										"source": {
+											"path": "$['deathIncrease']"
+										},
+										"sink": {
+											"name": "deathIncrease"
+										}
+									},
+									{
+										"source": {
+											"path": "$['hospitalizedIncrease']"
+										},
+										"sink": {
+											"name": "hospitalizedIncrease"
+										}
+									},
+									{
+										"source": {
+											"path": "$['negativeIncrease']"
+										},
+										"sink": {
+											"name": "negativeIncrease"
+										}
+									},
+									{
+										"source": {
+											"path": "$['positiveIncrease']"
+										},
+										"sink": {
+											"name": "positiveIncrease"
+										}
+									},
+									{
+										"source": {
+											"path": "$['totalTestResultsIncrease']"
+										},
+										"sink": {
+											"name": "totalTestResultsIncrease"
+										}
+									},
+									{
+										"source": {
+											"path": "$['hash']"
+										},
+										"sink": {
+											"name": "hash"
+										}
+									}
+								],
+								"collectionReference": "",
+								"mapComplexValuesToString": false
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "testapi",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DelimitedText1",
+								"type": "DatasetReference",
+								"parameters": {
+									"suffix": {
+										"value": "testresult-latest",
+										"type": "Expression"
+									}
+								}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/testapi')]",
+				"[concat(variables('workspaceId'), '/datasets/DelimitedText1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/AzureSynapseAnalyticsTable1')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "synapse-trial-dev-WorkspaceDefaultSqlServer",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"DBName": "devpool"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlDWTable",
+				"schema": [
+					{
+						"name": "state_code",
+						"type": "varchar"
+					},
+					{
+						"name": "state",
+						"type": "varchar"
+					},
+					{
+						"name": "city",
+						"type": "varchar"
+					},
+					{
+						"name": "total_population",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "female_population",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "male_population",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "foreign_born",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "median_age",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "average_household_size",
+						"type": "float",
+						"precision": 15
+					}
+				],
+				"typeProperties": {
+					"schema": "open_data",
+					"table": "dim_city_demographics"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/synapse-trial-dev-WorkspaceDefaultSqlServer')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/DelimitedText1')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "synapse-trial-dev-WorkspaceDefaultStorage",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"suffix": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().suffix",
+							"type": "Expression"
+						},
+						"folderPath": "test-covid-data",
+						"fileSystem": "synapsefiledev"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/synapse-trial-dev-WorkspaceDefaultStorage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/cdc_covid_cases')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "cdc_covid_cases_api",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"queryParam": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {
+					"relativeUrl": {
+						"value": "@dataset().queryParam",
+						"type": "Expression"
+					}
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/cdc_covid_cases_api')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/cdc_covid_cases_csv')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "synapse-trial-dev-WorkspaceDefaultStorage",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"suffix": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().suffix",
+							"type": "Expression"
+						},
+						"folderPath": "cdc-covid-cases",
+						"fileSystem": "synapsefiledev"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/synapse-trial-dev-WorkspaceDefaultStorage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/cdc_vaccination')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "cdc_vaccination_api",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"queryParam": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {
+					"relativeUrl": {
+						"value": "@dataset().queryParam",
+						"type": "Expression"
+					}
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/cdc_vaccination_api')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/cdc_vaccination_csv')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "synapse-trial-dev-WorkspaceDefaultStorage",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"suffix": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().suffix",
+							"type": "Expression"
+						},
+						"folderPath": "cdc-vaccination",
+						"fileSystem": "synapsefiledev"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/synapse-trial-dev-WorkspaceDefaultStorage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/open_data_population_dataset')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "synapse-trial-dev-WorkspaceDefaultSqlServer",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"DBName": "devpool"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlDWTable",
+				"schema": [
+					{
+						"name": "datasetid",
+						"type": "nvarchar"
+					},
+					{
+						"name": "recordid",
+						"type": "nvarchar"
+					},
+					{
+						"name": "total_population",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "female_population",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "count",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "foreign_born",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "state_code",
+						"type": "nvarchar"
+					},
+					{
+						"name": "average_household_size",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "city",
+						"type": "nvarchar"
+					},
+					{
+						"name": "race",
+						"type": "nvarchar"
+					},
+					{
+						"name": "male_population",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "median_age",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "number_of_veterans",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "state",
+						"type": "nvarchar"
+					}
+				],
+				"typeProperties": {
+					"tableName": "Staging.open_data_population"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/synapse-trial-dev-WorkspaceDefaultSqlServer')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/open_data_state_agg_sink')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "synapse-trial-dev-WorkspaceDefaultSqlServer",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"DBName": "devpool"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlDWTable",
+				"schema": [
+					{
+						"name": "state_code",
+						"type": "varchar"
+					},
+					{
+						"name": "state",
+						"type": "varchar"
+					},
+					{
+						"name": "total_population",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "female_population",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "male_population",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "foreign_born",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "median_age",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "average_household_size",
+						"type": "float",
+						"precision": 15
+					}
+				],
+				"typeProperties": {
+					"schema": "open_data",
+					"table": "dim_state_demographics"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/synapse-trial-dev-WorkspaceDefaultSqlServer')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/opendata_college')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "opendata_college_api",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/opendata_college_api')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/opendata_college_csv')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "synapse-trial-dev-WorkspaceDefaultStorage",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"suffix": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().suffix",
+							"type": "Expression"
+						},
+						"folderPath": "opendata-college",
+						"fileSystem": "synapsefiledev"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/synapse-trial-dev-WorkspaceDefaultStorage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/opendata_population')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "opendata_population_api",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/opendata_population_api')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/opendata_population_csv')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "synapse-trial-dev-WorkspaceDefaultStorage",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"suffix": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().suffix",
+							"type": "Expression"
+						},
+						"folderPath": "opendata-population",
+						"fileSystem": "synapsefiledev"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/synapse-trial-dev-WorkspaceDefaultStorage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/pool_cdc_daily_cases')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "SqlPoolTable",
+				"schema": [
+					{
+						"name": "submission_date",
+						"type": "nvarchar"
+					},
+					{
+						"name": "state",
+						"type": "nvarchar"
+					},
+					{
+						"name": "tot_cases",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "conf_cases",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "prob_cases",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "new_case",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "pnew_case",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "tot_death",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "conf_death",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "prob_death",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "new_death",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "pnew_death",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "created_at",
+						"type": "nvarchar"
+					},
+					{
+						"name": "consent_cases",
+						"type": "nvarchar"
+					},
+					{
+						"name": "consent_deaths",
+						"type": "nvarchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "Staging",
+					"table": "cdc_daily_cases"
+				},
+				"sqlPool": {
+					"referenceName": "devpool",
+					"type": "SqlPoolReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/sqlPools/devpool')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/pool_cdc_daily_vaccination')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "SqlPoolTable",
+				"schema": [
+					{
+						"name": "date",
+						"type": "datetime2",
+						"scale": 0
+					},
+					{
+						"name": "mmwr_week",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "location",
+						"type": "nvarchar"
+					},
+					{
+						"name": "distributed",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "distributed_janssen",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "distributed_moderna",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "distributed_pfizer",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "distributed_unk_manuf",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "dist_per_100k",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "distributed_per_100k_12plus",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "distributed_per_100k_18plus",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "distributed_per_100k_65plus",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "administered",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "administered_12plus",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "administered_18plus",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "administered_65plus",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "administered_janssen",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "administered_moderna",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "administered_pfizer",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "administered_unk_manuf",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "admin_per_100k",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "admin_per_100k_12plus",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "admin_per_100k_18plus",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "admin_per_100k_65plus",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "recip_administered",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "administered_dose1_recip",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "administered_dose1_pop_pct",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "administered_dose1_recip_1",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "administered_dose1_recip_2",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "administered_dose1_recip_3",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "administered_dose1_recip_4",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "administered_dose1_recip_5",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "administered_dose1_recip_6",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "series_complete_yes",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "series_complete_pop_pct",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "series_complete_12plus",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "series_complete_12pluspop",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "series_complete_18plus",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "series_complete_18pluspop",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "series_complete_65plus",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "series_complete_65pluspop",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "series_complete_janssen",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "series_complete_moderna",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "series_complete_pfizer",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "series_complete_unk_manuf",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "series_complete_janssen_12plus",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "series_complete_moderna_12plus",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "series_complete_pfizer_12plus",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "series_complete_unk_manuf_1",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "series_complete_janssen_18plus",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "series_complete_moderna_18plus",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "series_complete_pfizer_18plus",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "series_complete_unk_manuf_2",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "series_complete_janssen_65plus",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "series_complete_moderna_65plus",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "series_complete_pfizer_65plus",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "series_complete_unk_manuf_3",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "additional_doses",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "additional_doses_vax_pct",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "additional_doses_12plus",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "additional_doses_12plus_vax_pct",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "additional_doses_18plus",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "additional_doses_18plus_vax_pct",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "additional_doses_50plus",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "additional_doses_50plus_vax_pct",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "additional_doses_65plus",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "additional_doses_65plus_vax_pct",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "additional_doses_moderna",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "additional_doses_pfizer",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "additional_doses_janssen",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "additional_doses_unk_manuf",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "administered_dose1_recip_5plus",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "administered_dose1_recip_5pluspop_pct",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "series_complete_5plus",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "series_complete_5pluspop_pct",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "administered_5plus",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "admin_per_100k_5plus",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "distributed_per_100k_5plus",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "series_complete_moderna_5plus",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "series_complete_pfizer_5plus",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "series_complete_janssen_5plus",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "series_complete_unk_manuf_5plus",
+						"type": "bigint",
+						"precision": 19
+					}
+				],
+				"typeProperties": {
+					"schema": "Staging",
+					"table": "cdc_daily_vaccination"
+				},
+				"sqlPool": {
+					"referenceName": "devpool",
+					"type": "SqlPoolReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/sqlPools/devpool')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/pool_open_data_college')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "SqlPoolTable",
+				"schema": [
+					{
+						"name": "datasetid",
+						"type": "nvarchar"
+					},
+					{
+						"name": "recordid",
+						"type": "nvarchar"
+					},
+					{
+						"name": "naics_desc",
+						"type": "nvarchar"
+					},
+					{
+						"name": "sector",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "tot_enroll",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "locale",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "zip",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "val_method",
+						"type": "nvarchar"
+					},
+					{
+						"name": "housing",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "hi_offer",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "merge_id",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "state",
+						"type": "nvarchar"
+					},
+					{
+						"name": "status",
+						"type": "nvarchar"
+					},
+					{
+						"name": "longitude",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "naics_code",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "name",
+						"type": "nvarchar"
+					},
+					{
+						"name": "deg_grant",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "objectid",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "countyfips",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "alias",
+						"type": "nvarchar"
+					},
+					{
+						"name": "website",
+						"type": "nvarchar"
+					},
+					{
+						"name": "stfips",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "ft_enroll",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "ipedsid",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "dorm_cap",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "sourcedate",
+						"type": "datetime2",
+						"scale": 0
+					},
+					{
+						"name": "latitude",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "address",
+						"type": "nvarchar"
+					},
+					{
+						"name": "county",
+						"type": "nvarchar"
+					},
+					{
+						"name": "population",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "level",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "city",
+						"type": "nvarchar"
+					},
+					{
+						"name": "val_date",
+						"type": "datetime2",
+						"scale": 0
+					},
+					{
+						"name": "telephone",
+						"type": "nvarchar"
+					},
+					{
+						"name": "size_set",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "cofips",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "close_date",
+						"type": "nvarchar"
+					},
+					{
+						"name": "tot_emp",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "type",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "country",
+						"type": "nvarchar"
+					},
+					{
+						"name": "pt_enroll",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "zip4",
+						"type": "nvarchar"
+					},
+					{
+						"name": "source",
+						"type": "nvarchar"
+					},
+					{
+						"name": "shelter_id",
+						"type": "nvarchar"
+					},
+					{
+						"name": "inst_size",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "record_timestamp",
+						"type": "datetime2",
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "Staging",
+					"table": "open_data_college"
+				},
+				"sqlPool": {
+					"referenceName": "devpool",
+					"type": "SqlPoolReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/sqlPools/devpool')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/pool_open_data_population')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "SqlPoolTable",
+				"schema": [
+					{
+						"name": "datasetid",
+						"type": "nvarchar"
+					},
+					{
+						"name": "recordid",
+						"type": "nvarchar"
+					},
+					{
+						"name": "total_population",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "female_population",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "count",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "foreign_born",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "state_code",
+						"type": "nvarchar"
+					},
+					{
+						"name": "average_household_size",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "city",
+						"type": "nvarchar"
+					},
+					{
+						"name": "race",
+						"type": "nvarchar"
+					},
+					{
+						"name": "male_population",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "median_age",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "number_of_veterans",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "state",
+						"type": "nvarchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "Staging",
+					"table": "open_data_population"
+				},
+				"sqlPool": {
+					"referenceName": "devpool",
+					"type": "SqlPoolReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/sqlPools/devpool')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/testapi')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "testApiService",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/testApiService')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/cdc_covid_cases_api')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "RestService",
+				"typeProperties": {
+					"url": "[parameters('cdc_covid_cases_api_properties_typeProperties_url')]",
+					"enableServerCertificateValidation": true,
+					"authenticationType": "Anonymous"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/cdc_vaccination_api')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "RestService",
+				"typeProperties": {
+					"url": "[parameters('cdc_vaccination_api_properties_typeProperties_url')]",
+					"enableServerCertificateValidation": true,
+					"authenticationType": "Anonymous"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/opendata_college_api')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "RestService",
+				"typeProperties": {
+					"url": "[parameters('opendata_college_api_properties_typeProperties_url')]",
+					"enableServerCertificateValidation": true,
+					"authenticationType": "Anonymous"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/opendata_population_api')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "RestService",
+				"typeProperties": {
+					"url": "[parameters('opendata_population_api_properties_typeProperties_url')]",
+					"enableServerCertificateValidation": true,
+					"authenticationType": "Anonymous"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/synapse-trial-dev-WorkspaceDefaultSqlServer')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"parameters": {
+					"DBName": {
+						"type": "String"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlDW",
+				"typeProperties": {
+					"connectionString": "[parameters('synapse-trial-dev-WorkspaceDefaultSqlServer_connectionString')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/synapse-trial-dev-WorkspaceDefaultStorage')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('synapse-trial-dev-WorkspaceDefaultStorage_properties_typeProperties_url')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/testApiService')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "RestService",
+				"typeProperties": {
+					"url": "[parameters('testApiService_properties_typeProperties_url')]",
+					"enableServerCertificateValidation": true,
+					"authenticationType": "Anonymous"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/AutoResolveIntegrationRuntime')]",
+			"type": "Microsoft.Synapse/workspaces/integrationRuntimes",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"type": "Managed",
+				"typeProperties": {
+					"computeProperties": {
+						"location": "AutoResolve",
+						"dataFlowProperties": {
+							"computeType": "General",
+							"coreCount": 8,
+							"timeToLive": 0
+						}
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/open_data_population_dataflow')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "open_data_population_dataset",
+								"type": "DatasetReference"
+							},
+							"name": "StageOpenDataPopulation"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "open_data_state_agg_sink",
+								"type": "DatasetReference"
+							},
+							"name": "LoadToDimStatePopulation"
+						},
+						{
+							"dataset": {
+								"referenceName": "AzureSynapseAnalyticsTable1",
+								"type": "DatasetReference"
+							},
+							"name": "LoadToDimCityPopulation"
+						}
+					],
+					"transformations": [
+						{
+							"name": "RemoveDuplicatesAndRenameColumns"
+						},
+						{
+							"name": "StateAggregate"
+						}
+					],
+					"script": "source(output(\n\t\tdatasetid as string,\n\t\trecordid as string,\n\t\ttotal_population as long,\n\t\tfemale_population as long,\n\t\tcount as long,\n\t\tforeign_born as long,\n\t\tstate_code as string,\n\t\taverage_household_size as double,\n\t\tcity as string,\n\t\trace as string,\n\t\tmale_population as long,\n\t\tmedian_age as double,\n\t\tnumber_of_veterans as long,\n\t\tstate as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tstaged: true) ~> StageOpenDataPopulation\nStageOpenDataPopulation select(mapColumn(\n\t\tdatasetid,\n\t\trecordid,\n\t\ttotal_population,\n\t\tfemale_population,\n\t\tcount,\n\t\tforeign_born,\n\t\tstate_code,\n\t\taverage_household_size,\n\t\tcity,\n\t\trace,\n\t\tmale_population,\n\t\tmedian_age,\n\t\tnumber_of_veterans,\n\t\tstate\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> RemoveDuplicatesAndRenameColumns\nRemoveDuplicatesAndRenameColumns aggregate(groupBy(state_code,\n\t\tstate),\n\ttotal_population = sum(total_population),\n\t\tfemale_population = sum(female_population),\n\t\tmale_population = sum(male_population),\n\t\tforeign_born = sum(foreign_born),\n\t\taverage_household_size = avg(average_household_size),\n\t\tmedian_age = avg(median_age)) ~> StateAggregate\nStateAggregate sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tstate_code as string,\n\t\tstate as string,\n\t\ttotal_population as long,\n\t\tfemale_population as long,\n\t\tmale_population as long,\n\t\tforeign_born as long,\n\t\tmedian_age as double,\n\t\taverage_household_size as double\n\t),\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\ttruncate:true,\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError',\n\tmapColumn(\n\t\tstate_code,\n\t\tstate,\n\t\ttotal_population,\n\t\tfemale_population,\n\t\tmale_population,\n\t\tforeign_born,\n\t\tmedian_age,\n\t\taverage_household_size\n\t)) ~> LoadToDimStatePopulation\nRemoveDuplicatesAndRenameColumns sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tstate_code as string,\n\t\tstate as string,\n\t\tcity as string,\n\t\ttotal_population as long,\n\t\tfemale_population as long,\n\t\tmale_population as long,\n\t\tforeign_born as long,\n\t\tmedian_age as double,\n\t\taverage_household_size as double\n\t),\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\ttruncate:true,\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError',\n\tmapColumn(\n\t\tstate_code,\n\t\tstate,\n\t\tcity,\n\t\ttotal_population,\n\t\tfemale_population,\n\t\tmale_population,\n\t\tforeign_born,\n\t\tmedian_age,\n\t\taverage_household_size\n\t)) ~> LoadToDimCityPopulation"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/open_data_population_dataset')]",
+				"[concat(variables('workspaceId'), '/datasets/open_data_state_agg_sink')]",
+				"[concat(variables('workspaceId'), '/datasets/AzureSynapseAnalyticsTable1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/CreateStagingScript')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "-- CREATE SCHEMA Staging;\n-- CREATE SCHEMA cdc;\n-- CREATE SCHEMA open_data;\n\n-- DROP TABLE [Staging].[cdc_daily_cases];\n-- CREATE TABLE [Staging].[cdc_daily_cases]\n-- (\n-- \t[submission_date] nvarchar(4000),\n-- \t[state] nvarchar(4000),\n-- \t[tot_cases] nvarchar(4000),\n-- \t--[conf_cases] nvarchar(4000),\n-- \t--[prob_cases] nvarchar(4000),\n-- \t[new_case] nvarchar(4000),\n-- \t[pnew_case] nvarchar(4000),\n-- \t[tot_death] nvarchar(4000),\n-- \t--[conf_death] nvarchar(4000),\n-- \t--[prob_death] nvarchar(4000),\n-- \t[new_death] nvarchar(4000),\n-- \t[pnew_death] nvarchar(4000),\n-- \t[created_at] nvarchar(4000)\n-- \t--[consent_cases] nvarchar(4000),\n-- \t--[consent_deaths] nvarchar(4000)\n-- )\n-- WITH (CLUSTERED COLUMNSTORE INDEX, DISTRIBUTION = ROUND_ROBIN);\n\n-- CREATE TABLE [Staging].[cdc_daily_vaccination]\n-- (\n    -- [Date] nvarchar(4000),\n\t-- [MMWR_week] bigint,\n\t-- [Location] nvarchar(4000),\n\t-- [Distributed] bigint,\n\t-- [Distributed_Janssen] bigint,\n\t-- [Distributed_Moderna] bigint,\n\t-- [Distributed_Pfizer] bigint,\n\t-- [Distributed_Unk_Manuf] bigint,\n\t-- [Dist_Per_100K] bigint,\n\t-- [Distributed_Per_100k_12Plus] bigint,\n\t-- [Distributed_Per_100k_18Plus] bigint,\n\t-- [Distributed_Per_100k_65Plus] bigint,\n\t-- [Administered] bigint,\n\t-- [Administered_12Plus] bigint,\n\t-- [Administered_18Plus] bigint,\n\t-- [Administered_65Plus] bigint,\n\t-- [Administered_Janssen] bigint,\n\t-- [Administered_Moderna] bigint,\n\t-- [Administered_Pfizer] bigint,\n\t-- [Administered_Unk_Manuf] bigint,\n\t-- [Admin_Per_100K] bigint,\n\t-- [Admin_Per_100k_12Plus] bigint,\n\t-- [Admin_Per_100k_18Plus] bigint,\n\t-- [Admin_Per_100k_65Plus] bigint,\n\t-- [Recip_Administered] bigint,\n\t-- [Administered_Dose1_Recip] bigint,\n\t-- [Administered_Dose1_Pop_Pct] float,\n\t-- [Administered_Dose1_Recip_12Plus] bigint,\n\t-- [Administered_Dose1_Recip_12PlusPop_Pct] float,\n\t-- [Administered_Dose1_Recip_18Plus] bigint,\n\t-- [Administered_Dose1_Recip_18PlusPop_Pct] float,\n\t-- [Administered_Dose1_Recip_65Plus] bigint,\n\t-- [Administered_Dose1_Recip_65PlusPop_Pct] float,\n\t-- [Series_Complete_Yes] bigint,\n\t-- [Series_Complete_Pop_Pct] float,\n\t-- [Series_Complete_12Plus] bigint,\n\t-- [Series_Complete_12PlusPop_Pct] float,\n\t-- [Series_Complete_18Plus] bigint,\n\t-- [Series_Complete_18PlusPop_Pct] float,\n\t-- [Series_Complete_65Plus] bigint,\n\t-- [Series_Complete_65PlusPop_Pct] float,\n\t-- [Series_Complete_Janssen] bigint,\n\t-- [Series_Complete_Moderna] bigint,\n\t-- [Series_Complete_Pfizer] bigint,\n\t-- [Series_Complete_Unk_Manuf] bigint,\n\t-- [Series_Complete_Janssen_12Plus] bigint,\n\t-- [Series_Complete_Moderna_12Plus] bigint,\n\t-- [Series_Complete_Pfizer_12Plus] bigint,\n\t-- [Series_Complete_Unk_Manuf_12Plus] bigint,\n\t-- [Series_Complete_Janssen_18Plus] bigint,\n\t-- [Series_Complete_Moderna_18Plus] bigint,\n\t-- [Series_Complete_Pfizer_18Plus] bigint,\n\t-- [Series_Complete_Unk_Manuf_18Plus] bigint,\n\t-- [Series_Complete_Janssen_65Plus] bigint,\n\t-- [Series_Complete_Moderna_65Plus] bigint,\n\t-- [Series_Complete_Pfizer_65Plus] bigint,\n\t-- [Series_Complete_Unk_Manuf_65Plus] bigint,\n\t-- [Additional_Doses] bigint,\n\t-- [Additional_Doses_Vax_Pct] float,\n\t-- [Additional_Doses_12Plus] bigint,\n\t-- [Additional_Doses_12Plus_Vax_Pct] float,\n\t-- [Additional_Doses_18Plus] bigint,\n\t-- [Additional_Doses_18Plus_Vax_Pct] float,\n\t-- [Additional_Doses_50Plus] bigint,\n\t-- [Additional_Doses_50Plus_Vax_Pct] float,\n\t-- [Additional_Doses_65Plus] bigint,\n\t-- [Additional_Doses_65Plus_Vax_Pct] float,\n\t-- [Additional_Doses_Moderna] bigint,\n\t-- [Additional_Doses_Pfizer] bigint,\n\t-- [Additional_Doses_Janssen] bigint,\n\t-- [Additional_Doses_Unk_Manuf] bigint,\n\t-- [Administered_Dose1_Recip_5Plus] bigint,\n\t-- [Administered_Dose1_Recip_5PlusPop_Pct] float,\n\t-- [Series_Complete_5Plus] bigint,\n\t-- [Series_Complete_5PlusPop_Pct] float,\n\t-- [Administered_5Plus] bigint,\n\t-- [Admin_Per_100k_5Plus] bigint,\n\t-- [Distributed_Per_100k_5Plus] bigint,\n\t-- [Series_Complete_Moderna_5Plus] bigint,\n\t-- [Series_Complete_Pfizer_5Plus] bigint,\n\t-- [Series_Complete_Janssen_5Plus] bigint,\n\t-- [Series_Complete_Unk_Manuf_5Plus] bigint\n-- )\n-- WITH (CLUSTERED COLUMNSTORE INDEX, DISTRIBUTION = ROUND_ROBIN);\n\n-- CREATE TABLE [Staging].[open_data_population]\n-- (\n--  [datasetid] nvarchar(4000),\n-- \t[recordid] nvarchar(4000),\n-- \t[total_population] bigint,\n-- \t[female_population] bigint,\n-- \t[count] bigint,\n-- \t[foreign_born] bigint,\n-- \t[state_code] nvarchar(4000),\n-- \t[average_household_size] float,\n-- \t[city] nvarchar(4000),\n-- \t[race] nvarchar(4000),\n-- \t[male_population] bigint,\n-- \t[median_age] float,\n-- \t[number_of_veterans] bigint,\n-- \t[state] nvarchar(4000)\n-- )\n-- WITH (CLUSTERED COLUMNSTORE INDEX, DISTRIBUTION = ROUND_ROBIN);\n\n--DROP TABLE [Staging].[open_data_college];\n-- CREATE TABLE [Staging].[open_data_college]\n-- \t(\n-- \t [datasetid] nvarchar(4000),\n-- \t [recordid] nvarchar(4000),\n-- \t [naics_desc] nvarchar(4000),\n-- \t [sector] nvarchar(4000),\n-- \t [tot_enroll] nvarchar(4000),\n-- \t [locale] nvarchar(4000),\n-- \t [zip] nvarchar(4000),\n-- \t [val_method] nvarchar(4000),\n-- \t [housing] nvarchar(4000),\n-- \t [hi_offer] nvarchar(4000),\n-- \t [merge_id] nvarchar(4000),\n-- \t [state] nvarchar(4000),\n-- \t [status] nvarchar(4000),\n-- \t [longitude] nvarchar(4000),\n-- \t [naics_code] nvarchar(4000),\n-- \t [name] nvarchar(4000),\n-- \t [deg_grant] nvarchar(4000),\n-- \t [objectid] nvarchar(4000),\n-- \t [countyfips] nvarchar(4000),\n-- \t [alias] nvarchar(4000),\n-- \t [website] nvarchar(4000),\n-- \t [stfips] nvarchar(4000),\n-- \t [ft_enroll] nvarchar(4000),\n-- \t [ipedsid] nvarchar(4000),\n-- \t [dorm_cap] nvarchar(4000),\n-- \t [sourcedate] datetime2(0),\n-- \t [latitude] nvarchar(4000),\n-- \t [address] nvarchar(4000),\n-- \t [county] nvarchar(4000),\n-- \t [population] nvarchar(4000),\n-- \t [level] nvarchar(4000),\n-- \t [city] nvarchar(4000),\n-- \t [val_date] datetime2(0),\n-- \t [telephone] nvarchar(4000),\n-- \t [size_set] nvarchar(4000),\n-- \t [cofips] nvarchar(4000),\n-- \t [close_date] nvarchar(4000),\n-- \t [tot_emp] nvarchar(4000),\n-- \t [type] nvarchar(4000),\n-- \t [country] nvarchar(4000),\n-- \t [pt_enroll] nvarchar(4000),\n-- \t [zip4] nvarchar(4000),\n-- \t [source] nvarchar(4000),\n-- \t [shelter_id] nvarchar(4000),\n-- \t [inst_size] nvarchar(4000),\n-- \t [record_timestamp] datetime2(0)\n-- \t)\n-- WITH\n-- \t(\n-- \tDISTRIBUTION = ROUND_ROBIN,\n-- \t CLUSTERED COLUMNSTORE INDEX\n-- \t);\n\n\n\n\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "devpool",
+						"poolName": "devpool"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/CreateTableScript')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "DROP TABLE [open_data].[dim_state_demographics];\nCREATE TABLE [open_data].[dim_state_demographics]\n( \n\t[state_code] [varchar](3)  NOT NULL,\n\t[state] [varchar](20)  NOT NULL,\n\t[total_population] [bigint],\n\t[female_population] [bigint],\n\t[male_population] [bigint],\n\t[foreign_born] [bigint],\n\t[median_age] [float],\n\t[average_household_size] [float] \n)\nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n);\n\n\nCREATE TABLE [open_data].[dim_city_demographics]\n( \n\t[state_code] [varchar](3)  NOT NULL,\n\t[state] [varchar](20)  NOT NULL,\n\t[city] [varchar](100)  NOT NULL,\n\t[total_population] [bigint],\n\t[female_population] [bigint],\n\t[male_population] [bigint],\n\t[foreign_born] [bigint],\n\t[median_age] [float],\n\t[average_household_size] [float] \n)\nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n);\n\nCREATE TABLE [open_data].[dim_schools]\n( \n\t[state_code] [varchar](3)  NOT NULL,\n\t[city] [varchar](100),\n\t[school_name] [varchar](100),\n\t[status] [varchar](100),\n\t[website] [varchar](100),\n\t[telephone] [varchar](100),\n\t[longitude] [varchar](100),\n\t[latitude] [varchar](100),\n\t[population] [bigint],\n\t[ft_enroll] [bigint],\n\t[pt_enroll] [bigint]\n)\nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n);\n\nCREATE TABLE [cdc].[fact_cdc_daily_cases]\n( \n\t[rowkey] [nvarchar](4000)  NOT NULL,\n\t[state_code] [varchar](3),\n\t[submission_date] DATE  NOT NULL,\n\t[total_cases] [bigint],\n\t[new_cases] [bigint],\n\t[total_death] [bigint],\n\t[new_death] [bigint]\n)\nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n);\n\nCREATE TABLE [cdc].[fact_cdc_vaccine]\n( \n\t[rowkey] [nvarchar](4000)  NOT NULL,\n\t[state_code] [varchar](3),\n\t[submission_date] DATE  NOT NULL,\n\t[total_distributed] [bigint],\n\t[distributed_jnj] [bigint],\n\t[distributed_moderna] [bigint],\n\t[distributed_pfizer] [bigint],\n\t[total_administered] [bigint],\n\t[administered_jnj] [bigint],\n\t[administered_moderna] [bigint],\n\t[administered_pfizer] [bigint]\n)\nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n);",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "devpool",
+						"poolName": "devpool"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/SQL script 1')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "SELECT TOP (100) [state_code]\n,[state]\n,[city]\n,[total_population]\n,[female_population]\n,[male_population]\n,[foreign_born]\n,[median_age]\n,[average_household_size]\n FROM [open_data].[dim_city_demographics];",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "devpool",
+						"poolName": "devpool"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/devpool')]",
+			"type": "Microsoft.Synapse/workspaces/sqlPools",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"collation": "SQL_Latin1_General_CP1_CI_AS",
+				"maxSizeBytes": 263882790666240,
+				"annotations": []
+			},
+			"dependsOn": [],
+			"location": "eastus"
+		}
+	]
+}
