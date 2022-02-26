@@ -2204,6 +2204,49 @@
 								"parameters": {}
 							}
 						]
+					},
+					{
+						"name": "LoadDimSchools",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "extract_opendata_college",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "1.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "open_data_school_flow",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"StageOpenDataCollegeSource": {},
+									"LoadToDimSchools": {}
+								}
+							},
+							"staging": {
+								"linkedService": {
+									"referenceName": "synapse-trial-dev-WorkspaceDefaultStorage",
+									"type": "LinkedServiceReference"
+								},
+								"folderPath": "synapsefiledev/opendata-college"
+							},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
 					}
 				],
 				"policy": {
@@ -2214,7 +2257,10 @@
 			},
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/datasets/opendata_college')]",
-				"[concat(variables('workspaceId'), '/datasets/pool_open_data_college')]"
+				"[concat(variables('workspaceId'), '/datasets/pool_open_data_college')]",
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]",
+				"[concat(variables('workspaceId'), '/dataflows/open_data_school_flow')]",
+				"[concat(variables('workspaceId'), '/linkedServices/synapse-trial-dev-WorkspaceDefaultStorage')]"
 			]
 		},
 		{
@@ -2441,7 +2487,8 @@
 				"[concat(variables('workspaceId'), '/datasets/opendata_population')]",
 				"[concat(variables('workspaceId'), '/datasets/pool_open_data_population')]",
 				"[concat(variables('workspaceId'), '/dataflows/open_data_population_dataflow')]",
-				"[concat(variables('workspaceId'), '/linkedServices/synapse-trial-dev-WorkspaceDefaultStorage')]"
+				"[concat(variables('workspaceId'), '/linkedServices/synapse-trial-dev-WorkspaceDefaultStorage')]",
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
 			]
 		},
 		{
@@ -2717,7 +2764,7 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/AzureSynapseAnalyticsTable1')]",
+			"name": "[concat(parameters('workspaceName'), '/open_data_city_agg_sink')]",
 			"type": "Microsoft.Synapse/workspaces/datasets",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
@@ -3120,43 +3167,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/opendata_college_csv')]",
-			"type": "Microsoft.Synapse/workspaces/datasets",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "synapse-trial-dev-WorkspaceDefaultStorage",
-					"type": "LinkedServiceReference"
-				},
-				"parameters": {
-					"suffix": {
-						"type": "string"
-					}
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobFSLocation",
-						"fileName": {
-							"value": "@dataset().suffix",
-							"type": "Expression"
-						},
-						"folderPath": "opendata-college",
-						"fileSystem": "synapsefiledev"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
-				"schema": []
-			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/linkedServices/synapse-trial-dev-WorkspaceDefaultStorage')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('workspaceName'), '/opendata_population')]",
 			"type": "Microsoft.Synapse/workspaces/datasets",
 			"apiVersion": "2019-06-01-preview",
@@ -3172,43 +3182,6 @@
 			},
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/linkedServices/opendata_population_api')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/opendata_population_csv')]",
-			"type": "Microsoft.Synapse/workspaces/datasets",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "synapse-trial-dev-WorkspaceDefaultStorage",
-					"type": "LinkedServiceReference"
-				},
-				"parameters": {
-					"suffix": {
-						"type": "string"
-					}
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobFSLocation",
-						"fileName": {
-							"value": "@dataset().suffix",
-							"type": "Expression"
-						},
-						"folderPath": "opendata-population",
-						"fileSystem": "synapsefiledev"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
-				"schema": []
-			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/linkedServices/synapse-trial-dev-WorkspaceDefaultStorage')]"
 			]
 		},
 		{
@@ -4265,7 +4238,7 @@
 						},
 						{
 							"dataset": {
-								"referenceName": "AzureSynapseAnalyticsTable1",
+								"referenceName": "open_data_city_agg_sink",
 								"type": "DatasetReference"
 							},
 							"name": "LoadToDimCityPopulation"
@@ -4285,7 +4258,7 @@
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/datasets/open_data_population_dataset')]",
 				"[concat(variables('workspaceId'), '/datasets/open_data_state_agg_sink')]",
-				"[concat(variables('workspaceId'), '/datasets/AzureSynapseAnalyticsTable1')]"
+				"[concat(variables('workspaceId'), '/datasets/open_data_city_agg_sink')]"
 			]
 		},
 		{
@@ -4359,6 +4332,322 @@
 			},
 			"dependsOn": [],
 			"location": "eastus"
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/open_data_school_flow')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "open_data_college_source",
+								"type": "DatasetReference"
+							},
+							"name": "StageOpenDataCollegeSource"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "open_data_school_sink",
+								"type": "DatasetReference"
+							},
+							"name": "LoadToDimSchools"
+						}
+					],
+					"transformations": [
+						{
+							"name": "RemoveDuplicatesAndRenameColumns"
+						}
+					],
+					"script": "source(output(\n\t\tdatasetid as string,\n\t\trecordid as string,\n\t\tnaics_desc as string,\n\t\tsector as string,\n\t\ttot_enroll as string,\n\t\tlocale as string,\n\t\tzip as string,\n\t\tval_method as string,\n\t\thousing as string,\n\t\thi_offer as string,\n\t\tmerge_id as string,\n\t\tstate as string,\n\t\tstatus as string,\n\t\tlongitude as string,\n\t\tnaics_code as string,\n\t\tname as string,\n\t\tdeg_grant as string,\n\t\tobjectid as string,\n\t\tcountyfips as string,\n\t\talias as string,\n\t\twebsite as string,\n\t\tstfips as string,\n\t\tft_enroll as string,\n\t\tipedsid as string,\n\t\tdorm_cap as string,\n\t\tsourcedate as timestamp,\n\t\tlatitude as string,\n\t\taddress as string,\n\t\tcounty as string,\n\t\tpopulation as string,\n\t\tlevel as string,\n\t\tcity as string,\n\t\tval_date as timestamp,\n\t\ttelephone as string,\n\t\tsize_set as string,\n\t\tcofips as string,\n\t\tclose_date as string,\n\t\ttot_emp as string,\n\t\ttype as string,\n\t\tcountry as string,\n\t\tpt_enroll as string,\n\t\tzip4 as string,\n\t\tsource as string,\n\t\tshelter_id as string,\n\t\tinst_size as string,\n\t\trecord_timestamp as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tstaged: true) ~> StageOpenDataCollegeSource\nStageOpenDataCollegeSource select(mapColumn(\n\t\tdatasetid,\n\t\trecordid,\n\t\tnaics_desc,\n\t\tsector,\n\t\ttot_enroll,\n\t\tlocale,\n\t\tzip,\n\t\tval_method,\n\t\thousing,\n\t\thi_offer,\n\t\tmerge_id,\n\t\tstate_code = state,\n\t\tstatus,\n\t\tlongitude,\n\t\tnaics_code,\n\t\tname,\n\t\tdeg_grant,\n\t\tobjectid,\n\t\tcountyfips,\n\t\talias,\n\t\twebsite,\n\t\tstfips,\n\t\tft_enroll,\n\t\tipedsid,\n\t\tdorm_cap,\n\t\tsourcedate,\n\t\tlatitude,\n\t\taddress,\n\t\tcounty,\n\t\tpopulation,\n\t\tlevel,\n\t\tcity,\n\t\tval_date,\n\t\ttelephone,\n\t\tsize_set,\n\t\tcofips,\n\t\tclose_date,\n\t\ttot_emp,\n\t\ttype,\n\t\tcountry,\n\t\tpt_enroll,\n\t\tzip4,\n\t\tsource,\n\t\tshelter_id,\n\t\tinst_size,\n\t\trecord_timestamp\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> RemoveDuplicatesAndRenameColumns\nRemoveDuplicatesAndRenameColumns sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tstate_code as string,\n\t\tcity as string,\n\t\tschool_name as string,\n\t\tstatus as string,\n\t\twebsite as string,\n\t\ttelephone as string,\n\t\tlongitude as string,\n\t\tlatitude as string,\n\t\tpopulation as long,\n\t\tft_enroll as long,\n\t\tpt_enroll as long\n\t),\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\ttruncate:true,\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError',\n\tmapColumn(\n\t\tstate_code,\n\t\tcity,\n\t\tschool_name = name,\n\t\tstatus,\n\t\twebsite,\n\t\ttelephone,\n\t\tlongitude,\n\t\tlatitude,\n\t\tpopulation,\n\t\tft_enroll,\n\t\tpt_enroll\n\t)) ~> LoadToDimSchools"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/open_data_college_source')]",
+				"[concat(variables('workspaceId'), '/datasets/open_data_school_sink')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/open_data_college_source')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "synapse-trial-dev-WorkspaceDefaultSqlServer",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlDWTable",
+				"schema": [
+					{
+						"name": "datasetid",
+						"type": "nvarchar"
+					},
+					{
+						"name": "recordid",
+						"type": "nvarchar"
+					},
+					{
+						"name": "naics_desc",
+						"type": "nvarchar"
+					},
+					{
+						"name": "sector",
+						"type": "nvarchar"
+					},
+					{
+						"name": "tot_enroll",
+						"type": "nvarchar"
+					},
+					{
+						"name": "locale",
+						"type": "nvarchar"
+					},
+					{
+						"name": "zip",
+						"type": "nvarchar"
+					},
+					{
+						"name": "val_method",
+						"type": "nvarchar"
+					},
+					{
+						"name": "housing",
+						"type": "nvarchar"
+					},
+					{
+						"name": "hi_offer",
+						"type": "nvarchar"
+					},
+					{
+						"name": "merge_id",
+						"type": "nvarchar"
+					},
+					{
+						"name": "state",
+						"type": "nvarchar"
+					},
+					{
+						"name": "status",
+						"type": "nvarchar"
+					},
+					{
+						"name": "longitude",
+						"type": "nvarchar"
+					},
+					{
+						"name": "naics_code",
+						"type": "nvarchar"
+					},
+					{
+						"name": "name",
+						"type": "nvarchar"
+					},
+					{
+						"name": "deg_grant",
+						"type": "nvarchar"
+					},
+					{
+						"name": "objectid",
+						"type": "nvarchar"
+					},
+					{
+						"name": "countyfips",
+						"type": "nvarchar"
+					},
+					{
+						"name": "alias",
+						"type": "nvarchar"
+					},
+					{
+						"name": "website",
+						"type": "nvarchar"
+					},
+					{
+						"name": "stfips",
+						"type": "nvarchar"
+					},
+					{
+						"name": "ft_enroll",
+						"type": "nvarchar"
+					},
+					{
+						"name": "ipedsid",
+						"type": "nvarchar"
+					},
+					{
+						"name": "dorm_cap",
+						"type": "nvarchar"
+					},
+					{
+						"name": "sourcedate",
+						"type": "datetime2",
+						"scale": 0
+					},
+					{
+						"name": "latitude",
+						"type": "nvarchar"
+					},
+					{
+						"name": "address",
+						"type": "nvarchar"
+					},
+					{
+						"name": "county",
+						"type": "nvarchar"
+					},
+					{
+						"name": "population",
+						"type": "nvarchar"
+					},
+					{
+						"name": "level",
+						"type": "nvarchar"
+					},
+					{
+						"name": "city",
+						"type": "nvarchar"
+					},
+					{
+						"name": "val_date",
+						"type": "datetime2",
+						"scale": 0
+					},
+					{
+						"name": "telephone",
+						"type": "nvarchar"
+					},
+					{
+						"name": "size_set",
+						"type": "nvarchar"
+					},
+					{
+						"name": "cofips",
+						"type": "nvarchar"
+					},
+					{
+						"name": "close_date",
+						"type": "nvarchar"
+					},
+					{
+						"name": "tot_emp",
+						"type": "nvarchar"
+					},
+					{
+						"name": "type",
+						"type": "nvarchar"
+					},
+					{
+						"name": "country",
+						"type": "nvarchar"
+					},
+					{
+						"name": "pt_enroll",
+						"type": "nvarchar"
+					},
+					{
+						"name": "zip4",
+						"type": "nvarchar"
+					},
+					{
+						"name": "source",
+						"type": "nvarchar"
+					},
+					{
+						"name": "shelter_id",
+						"type": "nvarchar"
+					},
+					{
+						"name": "inst_size",
+						"type": "nvarchar"
+					},
+					{
+						"name": "record_timestamp",
+						"type": "datetime2",
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "Staging",
+					"table": "open_data_college"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/synapse-trial-dev-WorkspaceDefaultSqlServer')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/open_data_school_sink')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "synapse-trial-dev-WorkspaceDefaultSqlServer",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlDWTable",
+				"schema": [
+					{
+						"name": "state_code",
+						"type": "varchar"
+					},
+					{
+						"name": "city",
+						"type": "varchar"
+					},
+					{
+						"name": "school_name",
+						"type": "varchar"
+					},
+					{
+						"name": "status",
+						"type": "varchar"
+					},
+					{
+						"name": "website",
+						"type": "varchar"
+					},
+					{
+						"name": "telephone",
+						"type": "varchar"
+					},
+					{
+						"name": "longitude",
+						"type": "varchar"
+					},
+					{
+						"name": "latitude",
+						"type": "varchar"
+					},
+					{
+						"name": "population",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "ft_enroll",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "pt_enroll",
+						"type": "bigint",
+						"precision": 19
+					}
+				],
+				"typeProperties": {
+					"schema": "open_data",
+					"table": "dim_schools"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/synapse-trial-dev-WorkspaceDefaultSqlServer')]"
+			]
 		}
 	]
 }
