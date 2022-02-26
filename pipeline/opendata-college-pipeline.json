@@ -443,6 +443,13 @@
 						"referenceName": "open_data_school_flow",
 						"type": "DataFlowReference"
 					},
+					"staging": {
+						"linkedService": {
+							"referenceName": "synapse-trial-dev-WorkspaceDefaultStorage",
+							"type": "LinkedServiceReference"
+						},
+						"folderPath": "synapsefiledev/opendata-college"
+					},
 					"compute": {
 						"coreCount": 8,
 						"computeType": "General"
