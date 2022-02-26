@@ -4587,7 +4587,10 @@
 			"properties": {
 				"linkedServiceName": {
 					"referenceName": "synapse-trial-dev-WorkspaceDefaultSqlServer",
-					"type": "LinkedServiceReference"
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"DBName": "devpool"
+					}
 				},
 				"annotations": [],
 				"type": "AzureSqlDWTable",
