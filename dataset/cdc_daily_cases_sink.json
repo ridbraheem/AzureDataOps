@@ -1,0 +1,52 @@
+{
+	"name": "cdc_daily_cases_sink",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "synapse-trial-dev-WorkspaceDefaultSqlServer",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"DBName": "devpool"
+			}
+		},
+		"annotations": [],
+		"type": "AzureSqlDWTable",
+		"schema": [
+			{
+				"name": "rowkey",
+				"type": "nvarchar"
+			},
+			{
+				"name": "state_code",
+				"type": "varchar"
+			},
+			{
+				"name": "submission_date",
+				"type": "date"
+			},
+			{
+				"name": "total_cases",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "new_cases",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "total_death",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "new_death",
+				"type": "bigint",
+				"precision": 19
+			}
+		],
+		"typeProperties": {
+			"schema": "cdc",
+			"table": "fact_cdc_daily_cases"
+		}
+	}
+}
