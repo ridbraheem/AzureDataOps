@@ -1,0 +1,27 @@
+{
+	"name": "cdc_daily_cases_flow",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "cdc_daily_cases_source",
+						"type": "DatasetReference"
+					},
+					"name": "extractdailycases"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "RemoveDuplicatesAndRename"
+				},
+				{
+					"name": "AddRowKey"
+				}
+			],
+			"script": "source(output(\n\t\tsubmission_date as string,\n\t\tstate as string,\n\t\ttot_cases as string,\n\t\tnew_case as string,\n\t\tpnew_case as string,\n\t\ttot_death as string,\n\t\tnew_death as string,\n\t\tpnew_death as string,\n\t\tcreated_at as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tstaged: true) ~> extractdailycases\nextractdailycases select(mapColumn(\n\t\tsubmission_date,\n\t\tstate_code = state,\n\t\ttot_cases,\n\t\tnew_case,\n\t\tpnew_case,\n\t\ttot_death,\n\t\tnew_death,\n\t\tpnew_death,\n\t\tcreated_at\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> RemoveDuplicatesAndRename\nRemoveDuplicatesAndRename derive(rowkey = md5(concat(submission_date,state_code))) ~> AddRowKey"
+		}
+	}
+}

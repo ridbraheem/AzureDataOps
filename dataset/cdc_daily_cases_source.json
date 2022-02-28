@@ -1,0 +1,55 @@
+{
+	"name": "cdc_daily_cases_source",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "synapse-trial-dev-WorkspaceDefaultSqlServer",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"DBName": "devpool"
+			}
+		},
+		"annotations": [],
+		"type": "AzureSqlDWTable",
+		"schema": [
+			{
+				"name": "submission_date",
+				"type": "nvarchar"
+			},
+			{
+				"name": "state",
+				"type": "nvarchar"
+			},
+			{
+				"name": "tot_cases",
+				"type": "nvarchar"
+			},
+			{
+				"name": "new_case",
+				"type": "nvarchar"
+			},
+			{
+				"name": "pnew_case",
+				"type": "nvarchar"
+			},
+			{
+				"name": "tot_death",
+				"type": "nvarchar"
+			},
+			{
+				"name": "new_death",
+				"type": "nvarchar"
+			},
+			{
+				"name": "pnew_death",
+				"type": "nvarchar"
+			},
+			{
+				"name": "created_at",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"tableName": "Staging.cdc_daily_cases"
+		}
+	}
+}
