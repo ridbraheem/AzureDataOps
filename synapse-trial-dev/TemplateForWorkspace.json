@@ -313,6 +313,56 @@
 								"parameters": {}
 							}
 						]
+					},
+					{
+						"name": "LoadFactDailyCases",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "extract_covid_cases_lake",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "extract_covid_cases_pool",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "1.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "cdc_daily_cases_flow",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"extractdailycases": {},
+									"FactDailyCases": {},
+									"LoadDailyCases": {}
+								}
+							},
+							"staging": {
+								"linkedService": {
+									"referenceName": "synapse-trial-dev-WorkspaceDefaultStorage",
+									"type": "LinkedServiceReference"
+								},
+								"folderPath": "synapsefiledev/cdc-covid-cases"
+							},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
 					}
 				],
 				"policy": {
@@ -324,7 +374,9 @@
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/datasets/cdc_covid_cases')]",
 				"[concat(variables('workspaceId'), '/datasets/cdc_covid_cases_csv')]",
-				"[concat(variables('workspaceId'), '/datasets/pool_cdc_daily_cases')]"
+				"[concat(variables('workspaceId'), '/datasets/pool_cdc_daily_cases')]",
+				"[concat(variables('workspaceId'), '/dataflows/cdc_daily_cases_flow')]",
+				"[concat(variables('workspaceId'), '/linkedServices/synapse-trial-dev-WorkspaceDefaultStorage')]"
 			]
 		},
 		{
@@ -2258,7 +2310,6 @@
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/datasets/opendata_college')]",
 				"[concat(variables('workspaceId'), '/datasets/pool_open_data_college')]",
-				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]",
 				"[concat(variables('workspaceId'), '/dataflows/open_data_school_flow')]",
 				"[concat(variables('workspaceId'), '/linkedServices/synapse-trial-dev-WorkspaceDefaultStorage')]"
 			]
@@ -2487,8 +2538,7 @@
 				"[concat(variables('workspaceId'), '/datasets/opendata_population')]",
 				"[concat(variables('workspaceId'), '/datasets/pool_open_data_population')]",
 				"[concat(variables('workspaceId'), '/dataflows/open_data_population_dataflow')]",
-				"[concat(variables('workspaceId'), '/linkedServices/synapse-trial-dev-WorkspaceDefaultStorage')]",
-				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+				"[concat(variables('workspaceId'), '/linkedServices/synapse-trial-dev-WorkspaceDefaultStorage')]"
 			]
 		},
 		{
@@ -2764,73 +2814,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/open_data_city_agg_sink')]",
-			"type": "Microsoft.Synapse/workspaces/datasets",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "synapse-trial-dev-WorkspaceDefaultSqlServer",
-					"type": "LinkedServiceReference",
-					"parameters": {
-						"DBName": "devpool"
-					}
-				},
-				"annotations": [],
-				"type": "AzureSqlDWTable",
-				"schema": [
-					{
-						"name": "state_code",
-						"type": "varchar"
-					},
-					{
-						"name": "state",
-						"type": "varchar"
-					},
-					{
-						"name": "city",
-						"type": "varchar"
-					},
-					{
-						"name": "total_population",
-						"type": "bigint",
-						"precision": 19
-					},
-					{
-						"name": "female_population",
-						"type": "bigint",
-						"precision": 19
-					},
-					{
-						"name": "male_population",
-						"type": "bigint",
-						"precision": 19
-					},
-					{
-						"name": "foreign_born",
-						"type": "bigint",
-						"precision": 19
-					},
-					{
-						"name": "median_age",
-						"type": "float",
-						"precision": 15
-					},
-					{
-						"name": "average_household_size",
-						"type": "float",
-						"precision": 15
-					}
-				],
-				"typeProperties": {
-					"schema": "open_data",
-					"table": "dim_city_demographics"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/linkedServices/synapse-trial-dev-WorkspaceDefaultSqlServer')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('workspaceName'), '/DelimitedText1')]",
 			"type": "Microsoft.Synapse/workspaces/datasets",
 			"apiVersion": "2019-06-01-preview",
@@ -2933,6 +2916,123 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/cdc_daily_cases_sink')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "synapse-trial-dev-WorkspaceDefaultSqlServer",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"DBName": "devpool"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlDWTable",
+				"schema": [
+					{
+						"name": "rowkey",
+						"type": "nvarchar"
+					},
+					{
+						"name": "state_code",
+						"type": "varchar"
+					},
+					{
+						"name": "submission_date",
+						"type": "date"
+					},
+					{
+						"name": "total_cases",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "new_cases",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "total_death",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "new_death",
+						"type": "bigint",
+						"precision": 19
+					}
+				],
+				"typeProperties": {
+					"schema": "cdc",
+					"table": "fact_cdc_daily_cases"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/synapse-trial-dev-WorkspaceDefaultSqlServer')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/cdc_daily_cases_source')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "synapse-trial-dev-WorkspaceDefaultSqlServer",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"DBName": "devpool"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlDWTable",
+				"schema": [
+					{
+						"name": "submission_date",
+						"type": "nvarchar"
+					},
+					{
+						"name": "state",
+						"type": "nvarchar"
+					},
+					{
+						"name": "tot_cases",
+						"type": "nvarchar"
+					},
+					{
+						"name": "new_case",
+						"type": "nvarchar"
+					},
+					{
+						"name": "pnew_case",
+						"type": "nvarchar"
+					},
+					{
+						"name": "tot_death",
+						"type": "nvarchar"
+					},
+					{
+						"name": "new_death",
+						"type": "nvarchar"
+					},
+					{
+						"name": "pnew_death",
+						"type": "nvarchar"
+					},
+					{
+						"name": "created_at",
+						"type": "nvarchar"
+					}
+				],
+				"typeProperties": {
+					"tableName": "Staging.cdc_daily_cases"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/synapse-trial-dev-WorkspaceDefaultSqlServer')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/cdc_vaccination')]",
 			"type": "Microsoft.Synapse/workspaces/datasets",
 			"apiVersion": "2019-06-01-preview",
@@ -2995,6 +3095,285 @@
 			},
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/linkedServices/synapse-trial-dev-WorkspaceDefaultStorage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/open_data_city_agg_sink')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "synapse-trial-dev-WorkspaceDefaultSqlServer",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"DBName": "devpool"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlDWTable",
+				"schema": [
+					{
+						"name": "state_code",
+						"type": "varchar"
+					},
+					{
+						"name": "state",
+						"type": "varchar"
+					},
+					{
+						"name": "city",
+						"type": "varchar"
+					},
+					{
+						"name": "total_population",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "female_population",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "male_population",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "foreign_born",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "median_age",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "average_household_size",
+						"type": "float",
+						"precision": 15
+					}
+				],
+				"typeProperties": {
+					"schema": "open_data",
+					"table": "dim_city_demographics"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/synapse-trial-dev-WorkspaceDefaultSqlServer')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/open_data_college_source')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "synapse-trial-dev-WorkspaceDefaultSqlServer",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"DBName": "devpool"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlDWTable",
+				"schema": [
+					{
+						"name": "datasetid",
+						"type": "nvarchar"
+					},
+					{
+						"name": "recordid",
+						"type": "nvarchar"
+					},
+					{
+						"name": "naics_desc",
+						"type": "nvarchar"
+					},
+					{
+						"name": "sector",
+						"type": "nvarchar"
+					},
+					{
+						"name": "tot_enroll",
+						"type": "nvarchar"
+					},
+					{
+						"name": "locale",
+						"type": "nvarchar"
+					},
+					{
+						"name": "zip",
+						"type": "nvarchar"
+					},
+					{
+						"name": "val_method",
+						"type": "nvarchar"
+					},
+					{
+						"name": "housing",
+						"type": "nvarchar"
+					},
+					{
+						"name": "hi_offer",
+						"type": "nvarchar"
+					},
+					{
+						"name": "merge_id",
+						"type": "nvarchar"
+					},
+					{
+						"name": "state",
+						"type": "nvarchar"
+					},
+					{
+						"name": "status",
+						"type": "nvarchar"
+					},
+					{
+						"name": "longitude",
+						"type": "nvarchar"
+					},
+					{
+						"name": "naics_code",
+						"type": "nvarchar"
+					},
+					{
+						"name": "name",
+						"type": "nvarchar"
+					},
+					{
+						"name": "deg_grant",
+						"type": "nvarchar"
+					},
+					{
+						"name": "objectid",
+						"type": "nvarchar"
+					},
+					{
+						"name": "countyfips",
+						"type": "nvarchar"
+					},
+					{
+						"name": "alias",
+						"type": "nvarchar"
+					},
+					{
+						"name": "website",
+						"type": "nvarchar"
+					},
+					{
+						"name": "stfips",
+						"type": "nvarchar"
+					},
+					{
+						"name": "ft_enroll",
+						"type": "nvarchar"
+					},
+					{
+						"name": "ipedsid",
+						"type": "nvarchar"
+					},
+					{
+						"name": "dorm_cap",
+						"type": "nvarchar"
+					},
+					{
+						"name": "sourcedate",
+						"type": "datetime2",
+						"scale": 0
+					},
+					{
+						"name": "latitude",
+						"type": "nvarchar"
+					},
+					{
+						"name": "address",
+						"type": "nvarchar"
+					},
+					{
+						"name": "county",
+						"type": "nvarchar"
+					},
+					{
+						"name": "population",
+						"type": "nvarchar"
+					},
+					{
+						"name": "level",
+						"type": "nvarchar"
+					},
+					{
+						"name": "city",
+						"type": "nvarchar"
+					},
+					{
+						"name": "val_date",
+						"type": "datetime2",
+						"scale": 0
+					},
+					{
+						"name": "telephone",
+						"type": "nvarchar"
+					},
+					{
+						"name": "size_set",
+						"type": "nvarchar"
+					},
+					{
+						"name": "cofips",
+						"type": "nvarchar"
+					},
+					{
+						"name": "close_date",
+						"type": "nvarchar"
+					},
+					{
+						"name": "tot_emp",
+						"type": "nvarchar"
+					},
+					{
+						"name": "type",
+						"type": "nvarchar"
+					},
+					{
+						"name": "country",
+						"type": "nvarchar"
+					},
+					{
+						"name": "pt_enroll",
+						"type": "nvarchar"
+					},
+					{
+						"name": "zip4",
+						"type": "nvarchar"
+					},
+					{
+						"name": "source",
+						"type": "nvarchar"
+					},
+					{
+						"name": "shelter_id",
+						"type": "nvarchar"
+					},
+					{
+						"name": "inst_size",
+						"type": "nvarchar"
+					},
+					{
+						"name": "record_timestamp",
+						"type": "datetime2",
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "Staging",
+					"table": "open_data_college"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/synapse-trial-dev-WorkspaceDefaultSqlServer')]"
 			]
 		},
 		{
@@ -3079,6 +3458,78 @@
 				],
 				"typeProperties": {
 					"tableName": "Staging.open_data_population"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/synapse-trial-dev-WorkspaceDefaultSqlServer')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/open_data_school_sink')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "synapse-trial-dev-WorkspaceDefaultSqlServer",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"DBName": "devpool"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlDWTable",
+				"schema": [
+					{
+						"name": "state_code",
+						"type": "varchar"
+					},
+					{
+						"name": "city",
+						"type": "varchar"
+					},
+					{
+						"name": "school_name",
+						"type": "varchar"
+					},
+					{
+						"name": "status",
+						"type": "varchar"
+					},
+					{
+						"name": "website",
+						"type": "varchar"
+					},
+					{
+						"name": "telephone",
+						"type": "varchar"
+					},
+					{
+						"name": "longitude",
+						"type": "varchar"
+					},
+					{
+						"name": "latitude",
+						"type": "varchar"
+					},
+					{
+						"name": "population",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "ft_enroll",
+						"type": "bigint",
+						"precision": 19
+					},
+					{
+						"name": "pt_enroll",
+						"type": "bigint",
+						"precision": 19
+					}
+				],
+				"typeProperties": {
+					"schema": "open_data",
+					"table": "dim_schools"
 				}
 			},
 			"dependsOn": [
@@ -4213,6 +4664,57 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/cdc_daily_cases_flow')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "cdc_daily_cases_source",
+								"type": "DatasetReference"
+							},
+							"name": "extractdailycases"
+						},
+						{
+							"dataset": {
+								"referenceName": "cdc_daily_cases_sink",
+								"type": "DatasetReference"
+							},
+							"name": "FactDailyCases"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "cdc_daily_cases_sink",
+								"type": "DatasetReference"
+							},
+							"name": "LoadDailyCases"
+						}
+					],
+					"transformations": [
+						{
+							"name": "RemoveDuplicatesAndRename"
+						},
+						{
+							"name": "AddRowKey"
+						},
+						{
+							"name": "CheckIfKeyExists"
+						}
+					],
+					"script": "source(output(\n\t\tsubmission_date as string,\n\t\tstate as string,\n\t\ttot_cases as long,\n\t\tnew_case as long,\n\t\tpnew_case as string,\n\t\ttot_death as long,\n\t\tnew_death as long,\n\t\tpnew_death as string,\n\t\tcreated_at as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tstaged: true) ~> extractdailycases\nsource(output(\n\t\trowkey as string,\n\t\tstate_code as string,\n\t\tsubmission_date as date,\n\t\ttotal_cases as long,\n\t\tnew_cases as long,\n\t\ttotal_death as long,\n\t\tnew_death as long\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tstaged: true) ~> FactDailyCases\nextractdailycases select(mapColumn(\n\t\tsubmission_date,\n\t\tstate_code = state,\n\t\ttot_cases,\n\t\tnew_case,\n\t\tpnew_case,\n\t\ttot_death,\n\t\tnew_death,\n\t\tpnew_death,\n\t\tcreated_at\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> RemoveDuplicatesAndRename\nRemoveDuplicatesAndRename derive(rowkey = md5(concat(submission_date,state_code)),\n\t\tsubmission = toDate(submission_date)) ~> AddRowKey\nAddRowKey, FactDailyCases exists(AddRowKey@rowkey == FactDailyCases@rowkey,\n\tnegate:true,\n\tbroadcast: 'auto')~> CheckIfKeyExists\nCheckIfKeyExists sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\trowkey as string,\n\t\tstate_code as string,\n\t\tsubmission_date as date,\n\t\ttotal_cases as long,\n\t\tnew_cases as long,\n\t\ttotal_death as long,\n\t\tnew_death as long\n\t),\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError',\n\tmapColumn(\n\t\trowkey,\n\t\tstate_code,\n\t\tsubmission_date = submission,\n\t\ttotal_cases = tot_cases,\n\t\tnew_cases = new_case,\n\t\ttotal_death = tot_death,\n\t\tnew_death\n\t)) ~> LoadDailyCases"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/cdc_daily_cases_source')]",
+				"[concat(variables('workspaceId'), '/datasets/cdc_daily_cases_sink')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/open_data_population_dataflow')]",
 			"type": "Microsoft.Synapse/workspaces/dataflows",
 			"apiVersion": "2019-06-01-preview",
@@ -4262,78 +4764,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/CreateStagingScript')]",
-			"type": "Microsoft.Synapse/workspaces/sqlscripts",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"content": {
-					"query": "-- CREATE SCHEMA Staging;\n-- CREATE SCHEMA cdc;\n-- CREATE SCHEMA open_data;\n\n-- DROP TABLE [Staging].[cdc_daily_cases];\n-- CREATE TABLE [Staging].[cdc_daily_cases]\n-- (\n-- \t[submission_date] nvarchar(4000),\n-- \t[state] nvarchar(4000),\n-- \t[tot_cases] nvarchar(4000),\n-- \t--[conf_cases] nvarchar(4000),\n-- \t--[prob_cases] nvarchar(4000),\n-- \t[new_case] nvarchar(4000),\n-- \t[pnew_case] nvarchar(4000),\n-- \t[tot_death] nvarchar(4000),\n-- \t--[conf_death] nvarchar(4000),\n-- \t--[prob_death] nvarchar(4000),\n-- \t[new_death] nvarchar(4000),\n-- \t[pnew_death] nvarchar(4000),\n-- \t[created_at] nvarchar(4000)\n-- \t--[consent_cases] nvarchar(4000),\n-- \t--[consent_deaths] nvarchar(4000)\n-- )\n-- WITH (CLUSTERED COLUMNSTORE INDEX, DISTRIBUTION = ROUND_ROBIN);\n\n-- CREATE TABLE [Staging].[cdc_daily_vaccination]\n-- (\n    -- [Date] nvarchar(4000),\n\t-- [MMWR_week] bigint,\n\t-- [Location] nvarchar(4000),\n\t-- [Distributed] bigint,\n\t-- [Distributed_Janssen] bigint,\n\t-- [Distributed_Moderna] bigint,\n\t-- [Distributed_Pfizer] bigint,\n\t-- [Distributed_Unk_Manuf] bigint,\n\t-- [Dist_Per_100K] bigint,\n\t-- [Distributed_Per_100k_12Plus] bigint,\n\t-- [Distributed_Per_100k_18Plus] bigint,\n\t-- [Distributed_Per_100k_65Plus] bigint,\n\t-- [Administered] bigint,\n\t-- [Administered_12Plus] bigint,\n\t-- [Administered_18Plus] bigint,\n\t-- [Administered_65Plus] bigint,\n\t-- [Administered_Janssen] bigint,\n\t-- [Administered_Moderna] bigint,\n\t-- [Administered_Pfizer] bigint,\n\t-- [Administered_Unk_Manuf] bigint,\n\t-- [Admin_Per_100K] bigint,\n\t-- [Admin_Per_100k_12Plus] bigint,\n\t-- [Admin_Per_100k_18Plus] bigint,\n\t-- [Admin_Per_100k_65Plus] bigint,\n\t-- [Recip_Administered] bigint,\n\t-- [Administered_Dose1_Recip] bigint,\n\t-- [Administered_Dose1_Pop_Pct] float,\n\t-- [Administered_Dose1_Recip_12Plus] bigint,\n\t-- [Administered_Dose1_Recip_12PlusPop_Pct] float,\n\t-- [Administered_Dose1_Recip_18Plus] bigint,\n\t-- [Administered_Dose1_Recip_18PlusPop_Pct] float,\n\t-- [Administered_Dose1_Recip_65Plus] bigint,\n\t-- [Administered_Dose1_Recip_65PlusPop_Pct] float,\n\t-- [Series_Complete_Yes] bigint,\n\t-- [Series_Complete_Pop_Pct] float,\n\t-- [Series_Complete_12Plus] bigint,\n\t-- [Series_Complete_12PlusPop_Pct] float,\n\t-- [Series_Complete_18Plus] bigint,\n\t-- [Series_Complete_18PlusPop_Pct] float,\n\t-- [Series_Complete_65Plus] bigint,\n\t-- [Series_Complete_65PlusPop_Pct] float,\n\t-- [Series_Complete_Janssen] bigint,\n\t-- [Series_Complete_Moderna] bigint,\n\t-- [Series_Complete_Pfizer] bigint,\n\t-- [Series_Complete_Unk_Manuf] bigint,\n\t-- [Series_Complete_Janssen_12Plus] bigint,\n\t-- [Series_Complete_Moderna_12Plus] bigint,\n\t-- [Series_Complete_Pfizer_12Plus] bigint,\n\t-- [Series_Complete_Unk_Manuf_12Plus] bigint,\n\t-- [Series_Complete_Janssen_18Plus] bigint,\n\t-- [Series_Complete_Moderna_18Plus] bigint,\n\t-- [Series_Complete_Pfizer_18Plus] bigint,\n\t-- [Series_Complete_Unk_Manuf_18Plus] bigint,\n\t-- [Series_Complete_Janssen_65Plus] bigint,\n\t-- [Series_Complete_Moderna_65Plus] bigint,\n\t-- [Series_Complete_Pfizer_65Plus] bigint,\n\t-- [Series_Complete_Unk_Manuf_65Plus] bigint,\n\t-- [Additional_Doses] bigint,\n\t-- [Additional_Doses_Vax_Pct] float,\n\t-- [Additional_Doses_12Plus] bigint,\n\t-- [Additional_Doses_12Plus_Vax_Pct] float,\n\t-- [Additional_Doses_18Plus] bigint,\n\t-- [Additional_Doses_18Plus_Vax_Pct] float,\n\t-- [Additional_Doses_50Plus] bigint,\n\t-- [Additional_Doses_50Plus_Vax_Pct] float,\n\t-- [Additional_Doses_65Plus] bigint,\n\t-- [Additional_Doses_65Plus_Vax_Pct] float,\n\t-- [Additional_Doses_Moderna] bigint,\n\t-- [Additional_Doses_Pfizer] bigint,\n\t-- [Additional_Doses_Janssen] bigint,\n\t-- [Additional_Doses_Unk_Manuf] bigint,\n\t-- [Administered_Dose1_Recip_5Plus] bigint,\n\t-- [Administered_Dose1_Recip_5PlusPop_Pct] float,\n\t-- [Series_Complete_5Plus] bigint,\n\t-- [Series_Complete_5PlusPop_Pct] float,\n\t-- [Administered_5Plus] bigint,\n\t-- [Admin_Per_100k_5Plus] bigint,\n\t-- [Distributed_Per_100k_5Plus] bigint,\n\t-- [Series_Complete_Moderna_5Plus] bigint,\n\t-- [Series_Complete_Pfizer_5Plus] bigint,\n\t-- [Series_Complete_Janssen_5Plus] bigint,\n\t-- [Series_Complete_Unk_Manuf_5Plus] bigint\n-- )\n-- WITH (CLUSTERED COLUMNSTORE INDEX, DISTRIBUTION = ROUND_ROBIN);\n\n-- CREATE TABLE [Staging].[open_data_population]\n-- (\n--  [datasetid] nvarchar(4000),\n-- \t[recordid] nvarchar(4000),\n-- \t[total_population] bigint,\n-- \t[female_population] bigint,\n-- \t[count] bigint,\n-- \t[foreign_born] bigint,\n-- \t[state_code] nvarchar(4000),\n-- \t[average_household_size] float,\n-- \t[city] nvarchar(4000),\n-- \t[race] nvarchar(4000),\n-- \t[male_population] bigint,\n-- \t[median_age] float,\n-- \t[number_of_veterans] bigint,\n-- \t[state] nvarchar(4000)\n-- )\n-- WITH (CLUSTERED COLUMNSTORE INDEX, DISTRIBUTION = ROUND_ROBIN);\n\n--DROP TABLE [Staging].[open_data_college];\n-- CREATE TABLE [Staging].[open_data_college]\n-- \t(\n-- \t [datasetid] nvarchar(4000),\n-- \t [recordid] nvarchar(4000),\n-- \t [naics_desc] nvarchar(4000),\n-- \t [sector] nvarchar(4000),\n-- \t [tot_enroll] nvarchar(4000),\n-- \t [locale] nvarchar(4000),\n-- \t [zip] nvarchar(4000),\n-- \t [val_method] nvarchar(4000),\n-- \t [housing] nvarchar(4000),\n-- \t [hi_offer] nvarchar(4000),\n-- \t [merge_id] nvarchar(4000),\n-- \t [state] nvarchar(4000),\n-- \t [status] nvarchar(4000),\n-- \t [longitude] nvarchar(4000),\n-- \t [naics_code] nvarchar(4000),\n-- \t [name] nvarchar(4000),\n-- \t [deg_grant] nvarchar(4000),\n-- \t [objectid] nvarchar(4000),\n-- \t [countyfips] nvarchar(4000),\n-- \t [alias] nvarchar(4000),\n-- \t [website] nvarchar(4000),\n-- \t [stfips] nvarchar(4000),\n-- \t [ft_enroll] nvarchar(4000),\n-- \t [ipedsid] nvarchar(4000),\n-- \t [dorm_cap] nvarchar(4000),\n-- \t [sourcedate] datetime2(0),\n-- \t [latitude] nvarchar(4000),\n-- \t [address] nvarchar(4000),\n-- \t [county] nvarchar(4000),\n-- \t [population] nvarchar(4000),\n-- \t [level] nvarchar(4000),\n-- \t [city] nvarchar(4000),\n-- \t [val_date] datetime2(0),\n-- \t [telephone] nvarchar(4000),\n-- \t [size_set] nvarchar(4000),\n-- \t [cofips] nvarchar(4000),\n-- \t [close_date] nvarchar(4000),\n-- \t [tot_emp] nvarchar(4000),\n-- \t [type] nvarchar(4000),\n-- \t [country] nvarchar(4000),\n-- \t [pt_enroll] nvarchar(4000),\n-- \t [zip4] nvarchar(4000),\n-- \t [source] nvarchar(4000),\n-- \t [shelter_id] nvarchar(4000),\n-- \t [inst_size] nvarchar(4000),\n-- \t [record_timestamp] datetime2(0)\n-- \t)\n-- WITH\n-- \t(\n-- \tDISTRIBUTION = ROUND_ROBIN,\n-- \t CLUSTERED COLUMNSTORE INDEX\n-- \t);\n\n\n\n\n",
-					"metadata": {
-						"language": "sql"
-					},
-					"currentConnection": {
-						"databaseName": "devpool",
-						"poolName": "devpool"
-					},
-					"resultLimit": 5000
-				},
-				"type": "SqlQuery"
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/CreateTableScript')]",
-			"type": "Microsoft.Synapse/workspaces/sqlscripts",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"content": {
-					"query": "DROP TABLE [open_data].[dim_state_demographics];\nCREATE TABLE [open_data].[dim_state_demographics]\n( \n\t[state_code] [varchar](3)  NOT NULL,\n\t[state] [varchar](20)  NOT NULL,\n\t[total_population] [bigint],\n\t[female_population] [bigint],\n\t[male_population] [bigint],\n\t[foreign_born] [bigint],\n\t[median_age] [float],\n\t[average_household_size] [float] \n)\nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n);\n\n\nCREATE TABLE [open_data].[dim_city_demographics]\n( \n\t[state_code] [varchar](3)  NOT NULL,\n\t[state] [varchar](20)  NOT NULL,\n\t[city] [varchar](100)  NOT NULL,\n\t[total_population] [bigint],\n\t[female_population] [bigint],\n\t[male_population] [bigint],\n\t[foreign_born] [bigint],\n\t[median_age] [float],\n\t[average_household_size] [float] \n)\nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n);\n\nCREATE TABLE [open_data].[dim_schools]\n( \n\t[state_code] [varchar](3)  NOT NULL,\n\t[city] [varchar](100),\n\t[school_name] [varchar](100),\n\t[status] [varchar](100),\n\t[website] [varchar](100),\n\t[telephone] [varchar](100),\n\t[longitude] [varchar](100),\n\t[latitude] [varchar](100),\n\t[population] [bigint],\n\t[ft_enroll] [bigint],\n\t[pt_enroll] [bigint]\n)\nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n);\n\nCREATE TABLE [cdc].[fact_cdc_daily_cases]\n( \n\t[rowkey] [nvarchar](4000)  NOT NULL,\n\t[state_code] [varchar](3),\n\t[submission_date] DATE  NOT NULL,\n\t[total_cases] [bigint],\n\t[new_cases] [bigint],\n\t[total_death] [bigint],\n\t[new_death] [bigint]\n)\nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n);\n\nCREATE TABLE [cdc].[fact_cdc_vaccine]\n( \n\t[rowkey] [nvarchar](4000)  NOT NULL,\n\t[state_code] [varchar](3),\n\t[submission_date] DATE  NOT NULL,\n\t[total_distributed] [bigint],\n\t[distributed_jnj] [bigint],\n\t[distributed_moderna] [bigint],\n\t[distributed_pfizer] [bigint],\n\t[total_administered] [bigint],\n\t[administered_jnj] [bigint],\n\t[administered_moderna] [bigint],\n\t[administered_pfizer] [bigint]\n)\nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n);",
-					"metadata": {
-						"language": "sql"
-					},
-					"currentConnection": {
-						"databaseName": "devpool",
-						"poolName": "devpool"
-					},
-					"resultLimit": 5000
-				},
-				"type": "SqlQuery"
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/SQL script 1')]",
-			"type": "Microsoft.Synapse/workspaces/sqlscripts",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"content": {
-					"query": "SELECT TOP (100) [state_code]\n,[state]\n,[city]\n,[total_population]\n,[female_population]\n,[male_population]\n,[foreign_born]\n,[median_age]\n,[average_household_size]\n FROM [open_data].[dim_city_demographics];",
-					"metadata": {
-						"language": "sql"
-					},
-					"currentConnection": {
-						"databaseName": "devpool",
-						"poolName": "devpool"
-					},
-					"resultLimit": 5000
-				},
-				"type": "SqlQuery"
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/devpool')]",
-			"type": "Microsoft.Synapse/workspaces/sqlPools",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"collation": "SQL_Latin1_General_CP1_CI_AS",
-				"maxSizeBytes": 263882790666240,
-				"annotations": []
-			},
-			"dependsOn": [],
-			"location": "eastus"
-		},
-		{
 			"name": "[concat(parameters('workspaceName'), '/open_data_school_flow')]",
 			"type": "Microsoft.Synapse/workspaces/dataflows",
 			"apiVersion": "2019-06-01-preview",
@@ -4372,288 +4802,76 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/open_data_college_source')]",
-			"type": "Microsoft.Synapse/workspaces/datasets",
+			"name": "[concat(parameters('workspaceName'), '/CreateStagingScript')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
-				"linkedServiceName": {
-					"referenceName": "synapse-trial-dev-WorkspaceDefaultSqlServer",
-					"type": "LinkedServiceReference",
-					"parameters": {
-						"DBName": "devpool"
-					}
+				"content": {
+					"query": "-- CREATE SCHEMA Staging;\n-- CREATE SCHEMA cdc;\n-- CREATE SCHEMA open_data;\n\n-- DROP TABLE [Staging].[cdc_daily_cases];\n-- CREATE TABLE [Staging].[cdc_daily_cases]\n-- (\n-- \t[submission_date] nvarchar(4000),\n-- \t[state] nvarchar(4000),\n-- \t[tot_cases] nvarchar(4000),\n-- \t--[conf_cases] nvarchar(4000),\n-- \t--[prob_cases] nvarchar(4000),\n-- \t[new_case] nvarchar(4000),\n-- \t[pnew_case] nvarchar(4000),\n-- \t[tot_death] nvarchar(4000),\n-- \t--[conf_death] nvarchar(4000),\n-- \t--[prob_death] nvarchar(4000),\n-- \t[new_death] nvarchar(4000),\n-- \t[pnew_death] nvarchar(4000),\n-- \t[created_at] nvarchar(4000)\n-- \t--[consent_cases] nvarchar(4000),\n-- \t--[consent_deaths] nvarchar(4000)\n-- )\n-- WITH (CLUSTERED COLUMNSTORE INDEX, DISTRIBUTION = ROUND_ROBIN);\n\n-- CREATE TABLE [Staging].[cdc_daily_vaccination]\n-- (\n    -- [Date] nvarchar(4000),\n\t-- [MMWR_week] bigint,\n\t-- [Location] nvarchar(4000),\n\t-- [Distributed] bigint,\n\t-- [Distributed_Janssen] bigint,\n\t-- [Distributed_Moderna] bigint,\n\t-- [Distributed_Pfizer] bigint,\n\t-- [Distributed_Unk_Manuf] bigint,\n\t-- [Dist_Per_100K] bigint,\n\t-- [Distributed_Per_100k_12Plus] bigint,\n\t-- [Distributed_Per_100k_18Plus] bigint,\n\t-- [Distributed_Per_100k_65Plus] bigint,\n\t-- [Administered] bigint,\n\t-- [Administered_12Plus] bigint,\n\t-- [Administered_18Plus] bigint,\n\t-- [Administered_65Plus] bigint,\n\t-- [Administered_Janssen] bigint,\n\t-- [Administered_Moderna] bigint,\n\t-- [Administered_Pfizer] bigint,\n\t-- [Administered_Unk_Manuf] bigint,\n\t-- [Admin_Per_100K] bigint,\n\t-- [Admin_Per_100k_12Plus] bigint,\n\t-- [Admin_Per_100k_18Plus] bigint,\n\t-- [Admin_Per_100k_65Plus] bigint,\n\t-- [Recip_Administered] bigint,\n\t-- [Administered_Dose1_Recip] bigint,\n\t-- [Administered_Dose1_Pop_Pct] float,\n\t-- [Administered_Dose1_Recip_12Plus] bigint,\n\t-- [Administered_Dose1_Recip_12PlusPop_Pct] float,\n\t-- [Administered_Dose1_Recip_18Plus] bigint,\n\t-- [Administered_Dose1_Recip_18PlusPop_Pct] float,\n\t-- [Administered_Dose1_Recip_65Plus] bigint,\n\t-- [Administered_Dose1_Recip_65PlusPop_Pct] float,\n\t-- [Series_Complete_Yes] bigint,\n\t-- [Series_Complete_Pop_Pct] float,\n\t-- [Series_Complete_12Plus] bigint,\n\t-- [Series_Complete_12PlusPop_Pct] float,\n\t-- [Series_Complete_18Plus] bigint,\n\t-- [Series_Complete_18PlusPop_Pct] float,\n\t-- [Series_Complete_65Plus] bigint,\n\t-- [Series_Complete_65PlusPop_Pct] float,\n\t-- [Series_Complete_Janssen] bigint,\n\t-- [Series_Complete_Moderna] bigint,\n\t-- [Series_Complete_Pfizer] bigint,\n\t-- [Series_Complete_Unk_Manuf] bigint,\n\t-- [Series_Complete_Janssen_12Plus] bigint,\n\t-- [Series_Complete_Moderna_12Plus] bigint,\n\t-- [Series_Complete_Pfizer_12Plus] bigint,\n\t-- [Series_Complete_Unk_Manuf_12Plus] bigint,\n\t-- [Series_Complete_Janssen_18Plus] bigint,\n\t-- [Series_Complete_Moderna_18Plus] bigint,\n\t-- [Series_Complete_Pfizer_18Plus] bigint,\n\t-- [Series_Complete_Unk_Manuf_18Plus] bigint,\n\t-- [Series_Complete_Janssen_65Plus] bigint,\n\t-- [Series_Complete_Moderna_65Plus] bigint,\n\t-- [Series_Complete_Pfizer_65Plus] bigint,\n\t-- [Series_Complete_Unk_Manuf_65Plus] bigint,\n\t-- [Additional_Doses] bigint,\n\t-- [Additional_Doses_Vax_Pct] float,\n\t-- [Additional_Doses_12Plus] bigint,\n\t-- [Additional_Doses_12Plus_Vax_Pct] float,\n\t-- [Additional_Doses_18Plus] bigint,\n\t-- [Additional_Doses_18Plus_Vax_Pct] float,\n\t-- [Additional_Doses_50Plus] bigint,\n\t-- [Additional_Doses_50Plus_Vax_Pct] float,\n\t-- [Additional_Doses_65Plus] bigint,\n\t-- [Additional_Doses_65Plus_Vax_Pct] float,\n\t-- [Additional_Doses_Moderna] bigint,\n\t-- [Additional_Doses_Pfizer] bigint,\n\t-- [Additional_Doses_Janssen] bigint,\n\t-- [Additional_Doses_Unk_Manuf] bigint,\n\t-- [Administered_Dose1_Recip_5Plus] bigint,\n\t-- [Administered_Dose1_Recip_5PlusPop_Pct] float,\n\t-- [Series_Complete_5Plus] bigint,\n\t-- [Series_Complete_5PlusPop_Pct] float,\n\t-- [Administered_5Plus] bigint,\n\t-- [Admin_Per_100k_5Plus] bigint,\n\t-- [Distributed_Per_100k_5Plus] bigint,\n\t-- [Series_Complete_Moderna_5Plus] bigint,\n\t-- [Series_Complete_Pfizer_5Plus] bigint,\n\t-- [Series_Complete_Janssen_5Plus] bigint,\n\t-- [Series_Complete_Unk_Manuf_5Plus] bigint\n-- )\n-- WITH (CLUSTERED COLUMNSTORE INDEX, DISTRIBUTION = ROUND_ROBIN);\n\n-- CREATE TABLE [Staging].[open_data_population]\n-- (\n--  [datasetid] nvarchar(4000),\n-- \t[recordid] nvarchar(4000),\n-- \t[total_population] bigint,\n-- \t[female_population] bigint,\n-- \t[count] bigint,\n-- \t[foreign_born] bigint,\n-- \t[state_code] nvarchar(4000),\n-- \t[average_household_size] float,\n-- \t[city] nvarchar(4000),\n-- \t[race] nvarchar(4000),\n-- \t[male_population] bigint,\n-- \t[median_age] float,\n-- \t[number_of_veterans] bigint,\n-- \t[state] nvarchar(4000)\n-- )\n-- WITH (CLUSTERED COLUMNSTORE INDEX, DISTRIBUTION = ROUND_ROBIN);\n\n--DROP TABLE [Staging].[open_data_college];\n-- CREATE TABLE [Staging].[open_data_college]\n-- \t(\n-- \t [datasetid] nvarchar(4000),\n-- \t [recordid] nvarchar(4000),\n-- \t [naics_desc] nvarchar(4000),\n-- \t [sector] nvarchar(4000),\n-- \t [tot_enroll] nvarchar(4000),\n-- \t [locale] nvarchar(4000),\n-- \t [zip] nvarchar(4000),\n-- \t [val_method] nvarchar(4000),\n-- \t [housing] nvarchar(4000),\n-- \t [hi_offer] nvarchar(4000),\n-- \t [merge_id] nvarchar(4000),\n-- \t [state] nvarchar(4000),\n-- \t [status] nvarchar(4000),\n-- \t [longitude] nvarchar(4000),\n-- \t [naics_code] nvarchar(4000),\n-- \t [name] nvarchar(4000),\n-- \t [deg_grant] nvarchar(4000),\n-- \t [objectid] nvarchar(4000),\n-- \t [countyfips] nvarchar(4000),\n-- \t [alias] nvarchar(4000),\n-- \t [website] nvarchar(4000),\n-- \t [stfips] nvarchar(4000),\n-- \t [ft_enroll] nvarchar(4000),\n-- \t [ipedsid] nvarchar(4000),\n-- \t [dorm_cap] nvarchar(4000),\n-- \t [sourcedate] datetime2(0),\n-- \t [latitude] nvarchar(4000),\n-- \t [address] nvarchar(4000),\n-- \t [county] nvarchar(4000),\n-- \t [population] nvarchar(4000),\n-- \t [level] nvarchar(4000),\n-- \t [city] nvarchar(4000),\n-- \t [val_date] datetime2(0),\n-- \t [telephone] nvarchar(4000),\n-- \t [size_set] nvarchar(4000),\n-- \t [cofips] nvarchar(4000),\n-- \t [close_date] nvarchar(4000),\n-- \t [tot_emp] nvarchar(4000),\n-- \t [type] nvarchar(4000),\n-- \t [country] nvarchar(4000),\n-- \t [pt_enroll] nvarchar(4000),\n-- \t [zip4] nvarchar(4000),\n-- \t [source] nvarchar(4000),\n-- \t [shelter_id] nvarchar(4000),\n-- \t [inst_size] nvarchar(4000),\n-- \t [record_timestamp] datetime2(0)\n-- \t)\n-- WITH\n-- \t(\n-- \tDISTRIBUTION = ROUND_ROBIN,\n-- \t CLUSTERED COLUMNSTORE INDEX\n-- \t);\n\n\n\n\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "devpool",
+						"poolName": "devpool"
+					},
+					"resultLimit": 5000
 				},
-				"annotations": [],
-				"type": "AzureSqlDWTable",
-				"schema": [
-					{
-						"name": "datasetid",
-						"type": "nvarchar"
-					},
-					{
-						"name": "recordid",
-						"type": "nvarchar"
-					},
-					{
-						"name": "naics_desc",
-						"type": "nvarchar"
-					},
-					{
-						"name": "sector",
-						"type": "nvarchar"
-					},
-					{
-						"name": "tot_enroll",
-						"type": "nvarchar"
-					},
-					{
-						"name": "locale",
-						"type": "nvarchar"
-					},
-					{
-						"name": "zip",
-						"type": "nvarchar"
-					},
-					{
-						"name": "val_method",
-						"type": "nvarchar"
-					},
-					{
-						"name": "housing",
-						"type": "nvarchar"
-					},
-					{
-						"name": "hi_offer",
-						"type": "nvarchar"
-					},
-					{
-						"name": "merge_id",
-						"type": "nvarchar"
-					},
-					{
-						"name": "state",
-						"type": "nvarchar"
-					},
-					{
-						"name": "status",
-						"type": "nvarchar"
-					},
-					{
-						"name": "longitude",
-						"type": "nvarchar"
-					},
-					{
-						"name": "naics_code",
-						"type": "nvarchar"
-					},
-					{
-						"name": "name",
-						"type": "nvarchar"
-					},
-					{
-						"name": "deg_grant",
-						"type": "nvarchar"
-					},
-					{
-						"name": "objectid",
-						"type": "nvarchar"
-					},
-					{
-						"name": "countyfips",
-						"type": "nvarchar"
-					},
-					{
-						"name": "alias",
-						"type": "nvarchar"
-					},
-					{
-						"name": "website",
-						"type": "nvarchar"
-					},
-					{
-						"name": "stfips",
-						"type": "nvarchar"
-					},
-					{
-						"name": "ft_enroll",
-						"type": "nvarchar"
-					},
-					{
-						"name": "ipedsid",
-						"type": "nvarchar"
-					},
-					{
-						"name": "dorm_cap",
-						"type": "nvarchar"
-					},
-					{
-						"name": "sourcedate",
-						"type": "datetime2",
-						"scale": 0
-					},
-					{
-						"name": "latitude",
-						"type": "nvarchar"
-					},
-					{
-						"name": "address",
-						"type": "nvarchar"
-					},
-					{
-						"name": "county",
-						"type": "nvarchar"
-					},
-					{
-						"name": "population",
-						"type": "nvarchar"
-					},
-					{
-						"name": "level",
-						"type": "nvarchar"
-					},
-					{
-						"name": "city",
-						"type": "nvarchar"
-					},
-					{
-						"name": "val_date",
-						"type": "datetime2",
-						"scale": 0
-					},
-					{
-						"name": "telephone",
-						"type": "nvarchar"
-					},
-					{
-						"name": "size_set",
-						"type": "nvarchar"
-					},
-					{
-						"name": "cofips",
-						"type": "nvarchar"
-					},
-					{
-						"name": "close_date",
-						"type": "nvarchar"
-					},
-					{
-						"name": "tot_emp",
-						"type": "nvarchar"
-					},
-					{
-						"name": "type",
-						"type": "nvarchar"
-					},
-					{
-						"name": "country",
-						"type": "nvarchar"
-					},
-					{
-						"name": "pt_enroll",
-						"type": "nvarchar"
-					},
-					{
-						"name": "zip4",
-						"type": "nvarchar"
-					},
-					{
-						"name": "source",
-						"type": "nvarchar"
-					},
-					{
-						"name": "shelter_id",
-						"type": "nvarchar"
-					},
-					{
-						"name": "inst_size",
-						"type": "nvarchar"
-					},
-					{
-						"name": "record_timestamp",
-						"type": "datetime2",
-						"scale": 0
-					}
-				],
-				"typeProperties": {
-					"schema": "Staging",
-					"table": "open_data_college"
-				}
+				"type": "SqlQuery"
 			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/linkedServices/synapse-trial-dev-WorkspaceDefaultSqlServer')]"
-			]
+			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/open_data_school_sink')]",
-			"type": "Microsoft.Synapse/workspaces/datasets",
+			"name": "[concat(parameters('workspaceName'), '/CreateTableScript')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
-				"linkedServiceName": {
-					"referenceName": "synapse-trial-dev-WorkspaceDefaultSqlServer",
-					"type": "LinkedServiceReference",
-					"parameters": {
-						"DBName": "devpool"
-					}
+				"content": {
+					"query": "DROP TABLE [open_data].[dim_state_demographics];\nCREATE TABLE [open_data].[dim_state_demographics]\n( \n\t[state_code] [varchar](3)  NOT NULL,\n\t[state] [varchar](20)  NOT NULL,\n\t[total_population] [bigint],\n\t[female_population] [bigint],\n\t[male_population] [bigint],\n\t[foreign_born] [bigint],\n\t[median_age] [float],\n\t[average_household_size] [float] \n)\nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n);\n\n\nCREATE TABLE [open_data].[dim_city_demographics]\n( \n\t[state_code] [varchar](3)  NOT NULL,\n\t[state] [varchar](20)  NOT NULL,\n\t[city] [varchar](100)  NOT NULL,\n\t[total_population] [bigint],\n\t[female_population] [bigint],\n\t[male_population] [bigint],\n\t[foreign_born] [bigint],\n\t[median_age] [float],\n\t[average_household_size] [float] \n)\nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n);\n\nDROP TABLE [open_data].[dim_schools];\nCREATE TABLE [open_data].[dim_schools]\n( \n\t[state_code] [varchar](3)  NOT NULL,\n\t[city] nvarchar(4000),\n\t[school_name] nvarchar(4000),\n\t[status] [varchar](100),\n\t[website] nvarchar(4000),\n\t[telephone] [varchar](100),\n\t[longitude] nvarchar(4000),\n\t[latitude] nvarchar(4000),\n\t[population] [bigint],\n\t[ft_enroll] [bigint],\n\t[pt_enroll] [bigint]\n)\nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n);\n\nDROP TABLE [cdc].[fact_cdc_daily_cases];\nCREATE TABLE [cdc].[fact_cdc_daily_cases]\n( \n\t[rowkey] [nvarchar](4000)  NOT NULL,\n\t[state_code] [varchar](3),\n\t[submission_date] DATE  NOT NULL,\n\t[total_cases] [bigint],\n\t[new_cases] [bigint],\n\t[total_death] [bigint],\n\t[new_death] [bigint]\n)\nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n);\n\nCREATE TABLE [cdc].[fact_cdc_vaccine]\n( \n\t[rowkey] [nvarchar](4000)  NOT NULL,\n\t[state_code] [varchar](3),\n\t[submission_date] DATE  NOT NULL,\n\t[total_distributed] [bigint],\n\t[distributed_jnj] [bigint],\n\t[distributed_moderna] [bigint],\n\t[distributed_pfizer] [bigint],\n\t[total_administered] [bigint],\n\t[administered_jnj] [bigint],\n\t[administered_moderna] [bigint],\n\t[administered_pfizer] [bigint]\n)\nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n);",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "devpool",
+						"poolName": "devpool"
+					},
+					"resultLimit": 5000
 				},
-				"annotations": [],
-				"type": "AzureSqlDWTable",
-				"schema": [
-					{
-						"name": "state_code",
-						"type": "varchar"
-					},
-					{
-						"name": "city",
-						"type": "varchar"
-					},
-					{
-						"name": "school_name",
-						"type": "varchar"
-					},
-					{
-						"name": "status",
-						"type": "varchar"
-					},
-					{
-						"name": "website",
-						"type": "varchar"
-					},
-					{
-						"name": "telephone",
-						"type": "varchar"
-					},
-					{
-						"name": "longitude",
-						"type": "varchar"
-					},
-					{
-						"name": "latitude",
-						"type": "varchar"
-					},
-					{
-						"name": "population",
-						"type": "bigint",
-						"precision": 19
-					},
-					{
-						"name": "ft_enroll",
-						"type": "bigint",
-						"precision": 19
-					},
-					{
-						"name": "pt_enroll",
-						"type": "bigint",
-						"precision": 19
-					}
-				],
-				"typeProperties": {
-					"schema": "open_data",
-					"table": "dim_schools"
-				}
+				"type": "SqlQuery"
 			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/linkedServices/synapse-trial-dev-WorkspaceDefaultSqlServer')]"
-			]
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/SQL script 1')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "SELECT TOP (100) [rowkey]\n,[state_code]\n,[submission_date]\n,[total_cases]\n,[new_cases]\n,[total_death]\n,[new_death]\n FROM [cdc].[fact_cdc_daily_cases]",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "devpool",
+						"poolName": "devpool"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/devpool')]",
+			"type": "Microsoft.Synapse/workspaces/sqlPools",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"collation": "SQL_Latin1_General_CP1_CI_AS",
+				"maxSizeBytes": 263882790666240,
+				"annotations": []
+			},
+			"dependsOn": [],
+			"location": "eastus"
 		}
 	]
 }
