@@ -1,0 +1,17 @@
+{
+	"name": "SQL script 1",
+	"properties": {
+		"content": {
+			"query": "SELECT TOP (100) [rowkey]\n,[state_code]\n,[submission_date]\n,[total_cases]\n,[new_cases]\n,[total_death]\n,[new_death]\n FROM [cdc].[fact_cdc_daily_cases]",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "devpool",
+				"poolName": "devpool"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
