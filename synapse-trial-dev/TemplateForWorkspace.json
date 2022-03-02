@@ -346,7 +346,7 @@
 								"parameters": {},
 								"datasetParameters": {
 									"extractdailycases": {},
-									"LoadFactDailyCases": {}
+									"LoadFactCases": {}
 								}
 							},
 							"staging": {
@@ -375,7 +375,8 @@
 				"[concat(variables('workspaceId'), '/datasets/cdc_covid_cases_csv')]",
 				"[concat(variables('workspaceId'), '/datasets/pool_cdc_daily_cases')]",
 				"[concat(variables('workspaceId'), '/dataflows/cdc_daily_cases_flow')]",
-				"[concat(variables('workspaceId'), '/linkedServices/synapse-trial-dev-WorkspaceDefaultStorage')]"
+				"[concat(variables('workspaceId'), '/linkedServices/synapse-trial-dev-WorkspaceDefaultStorage')]",
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
 			]
 		},
 		{
@@ -2934,6 +2935,12 @@
 						"type": "nvarchar"
 					},
 					{
+						"name": "row_insert_time",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
 						"name": "state_code",
 						"type": "varchar"
 					},
@@ -4684,7 +4691,7 @@
 								"referenceName": "cdc_daily_cases_sink",
 								"type": "DatasetReference"
 							},
-							"name": "LoadFactDailyCases"
+							"name": "LoadFactCases"
 						}
 					],
 					"transformations": [
@@ -4695,7 +4702,7 @@
 							"name": "AddRowKey"
 						}
 					],
-					"script": "source(output(\n\t\tsubmission_date as string,\n\t\tstate as string,\n\t\ttot_cases as long,\n\t\tnew_case as long,\n\t\tpnew_case as string,\n\t\ttot_death as long,\n\t\tnew_death as long,\n\t\tpnew_death as string,\n\t\tcreated_at as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tstaged: true) ~> extractdailycases\nextractdailycases select(mapColumn(\n\t\tsubmission_date,\n\t\tstate_code = state,\n\t\ttot_cases,\n\t\tnew_case,\n\t\tpnew_case,\n\t\ttot_death,\n\t\tnew_death,\n\t\tpnew_death,\n\t\tcreated_at\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> RemoveDuplicatesAndRename\nRemoveDuplicatesAndRename derive(rowkey = md5(concat(submission_date,state_code)),\n\t\tsubmission = toDate(submission_date)) ~> AddRowKey\nAddRowKey sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\trowkey as string,\n\t\tstate_code as string,\n\t\tsubmission_date as date,\n\t\ttotal_cases as long,\n\t\tnew_cases as long,\n\t\ttotal_death as long,\n\t\tnew_death as long\n\t),\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError',\n\tmapColumn(\n\t\trowkey,\n\t\tstate_code,\n\t\tsubmission_date = submission,\n\t\ttotal_cases = tot_cases,\n\t\tnew_cases = new_case,\n\t\ttotal_death = tot_death,\n\t\tnew_death\n\t)) ~> LoadFactDailyCases"
+					"script": "source(output(\n\t\tsubmission_date as string,\n\t\tstate as string,\n\t\ttot_cases as long,\n\t\tnew_case as long,\n\t\tpnew_case as string,\n\t\ttot_death as long,\n\t\tnew_death as long,\n\t\tpnew_death as string,\n\t\tcreated_at as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tstaged: true) ~> extractdailycases\nextractdailycases select(mapColumn(\n\t\tsubmission_date,\n\t\tstate_code = state,\n\t\ttot_cases,\n\t\tnew_case,\n\t\tpnew_case,\n\t\ttot_death,\n\t\tnew_death,\n\t\tpnew_death,\n\t\tcreated_at\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> RemoveDuplicatesAndRename\nRemoveDuplicatesAndRename derive(rowkey = md5(concat(submission_date,state_code)),\n\t\tsubmission = toDate(submission_date),\n\t\trow_insert_time = currentTimestamp()) ~> AddRowKey\nAddRowKey sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\trowkey as string,\n\t\trow_insert_time as timestamp,\n\t\tstate_code as string,\n\t\tsubmission_date as date,\n\t\ttotal_cases as long,\n\t\tnew_cases as long,\n\t\ttotal_death as long,\n\t\tnew_death as long\n\t),\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError',\n\tmapColumn(\n\t\trowkey,\n\t\tstate_code,\n\t\tsubmission_date = submission,\n\t\ttotal_cases = tot_cases,\n\t\tnew_cases = new_case,\n\t\ttotal_death = tot_death,\n\t\tnew_death,\n\t\trow_insert_time\n\t)) ~> LoadFactCases"
 				}
 			},
 			"dependsOn": [
@@ -4816,7 +4823,7 @@
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
 				"content": {
-					"query": "DROP TABLE [open_data].[dim_state_demographics];\nCREATE TABLE [open_data].[dim_state_demographics]\n( \n\t[state_code] [varchar](3)  NOT NULL,\n\t[state] [varchar](20)  NOT NULL,\n\t[total_population] [bigint],\n\t[female_population] [bigint],\n\t[male_population] [bigint],\n\t[foreign_born] [bigint],\n\t[median_age] [float],\n\t[average_household_size] [float] \n)\nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n);\n\n\nCREATE TABLE [open_data].[dim_city_demographics]\n( \n\t[state_code] [varchar](3)  NOT NULL,\n\t[state] [varchar](20)  NOT NULL,\n\t[city] [varchar](100)  NOT NULL,\n\t[total_population] [bigint],\n\t[female_population] [bigint],\n\t[male_population] [bigint],\n\t[foreign_born] [bigint],\n\t[median_age] [float],\n\t[average_household_size] [float] \n)\nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n);\n\nDROP TABLE [open_data].[dim_schools];\nCREATE TABLE [open_data].[dim_schools]\n( \n\t[state_code] [varchar](3)  NOT NULL,\n\t[city] nvarchar(4000),\n\t[school_name] nvarchar(4000),\n\t[status] [varchar](100),\n\t[website] nvarchar(4000),\n\t[telephone] [varchar](100),\n\t[longitude] nvarchar(4000),\n\t[latitude] nvarchar(4000),\n\t[population] [bigint],\n\t[ft_enroll] [bigint],\n\t[pt_enroll] [bigint]\n)\nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n);\n\nDROP TABLE [cdc].[fact_cdc_daily_cases];\nCREATE TABLE [cdc].[fact_cdc_daily_cases]\n( \n\t[rowkey] [nvarchar](4000)  NOT NULL,\n\t[state_code] [varchar](3),\n\t[submission_date] DATE  NOT NULL,\n\t[total_cases] [bigint],\n\t[new_cases] [bigint],\n\t[total_death] [bigint],\n\t[new_death] [bigint]\n)\nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n);\n\nCREATE TABLE [cdc].[fact_cdc_vaccine]\n( \n\t[rowkey] [nvarchar](4000)  NOT NULL,\n\t[state_code] [varchar](3),\n\t[submission_date] DATE  NOT NULL,\n\t[total_distributed] [bigint],\n\t[distributed_jnj] [bigint],\n\t[distributed_moderna] [bigint],\n\t[distributed_pfizer] [bigint],\n\t[total_administered] [bigint],\n\t[administered_jnj] [bigint],\n\t[administered_moderna] [bigint],\n\t[administered_pfizer] [bigint]\n)\nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n);",
+					"query": "DROP TABLE [open_data].[dim_state_demographics];\nCREATE TABLE [open_data].[dim_state_demographics]\n( \n\t[state_code] [varchar](3)  NOT NULL,\n\t[state] [varchar](20)  NOT NULL,\n\t[total_population] [bigint],\n\t[female_population] [bigint],\n\t[male_population] [bigint],\n\t[foreign_born] [bigint],\n\t[median_age] [float],\n\t[average_household_size] [float] \n)\nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n);\n\n\nCREATE TABLE [open_data].[dim_city_demographics]\n( \n\t[state_code] [varchar](3)  NOT NULL,\n\t[state] [varchar](20)  NOT NULL,\n\t[city] [varchar](100)  NOT NULL,\n\t[total_population] [bigint],\n\t[female_population] [bigint],\n\t[male_population] [bigint],\n\t[foreign_born] [bigint],\n\t[median_age] [float],\n\t[average_household_size] [float] \n)\nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n);\n\nDROP TABLE [open_data].[dim_schools];\nCREATE TABLE [open_data].[dim_schools]\n( \n\t[state_code] [varchar](3)  NOT NULL,\n\t[city] nvarchar(4000),\n\t[school_name] nvarchar(4000),\n\t[status] [varchar](100),\n\t[website] nvarchar(4000),\n\t[telephone] [varchar](100),\n\t[longitude] nvarchar(4000),\n\t[latitude] nvarchar(4000),\n\t[population] [bigint],\n\t[ft_enroll] [bigint],\n\t[pt_enroll] [bigint]\n)\nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n);\n\nDROP TABLE [cdc].[fact_cdc_daily_cases];\nCREATE TABLE [cdc].[fact_cdc_daily_cases]\n( \n\t[rowkey] [nvarchar](4000)  NOT NULL,\n\t[row_insert_time] datetime  NOT NULL,\n\t[state_code] [varchar](3),\n\t[submission_date] DATE  NOT NULL,\n\t[total_cases] [bigint],\n\t[new_cases] [bigint],\n\t[total_death] [bigint],\n\t[new_death] [bigint]\n)\nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n);\n\nCREATE TABLE [cdc].[fact_cdc_vaccine]\n( \n\t[rowkey] [nvarchar](4000)  NOT NULL,\n\t[state_code] [varchar](3),\n\t[submission_date] DATE  NOT NULL,\n\t[total_distributed] [bigint],\n\t[distributed_jnj] [bigint],\n\t[distributed_moderna] [bigint],\n\t[distributed_pfizer] [bigint],\n\t[total_administered] [bigint],\n\t[administered_jnj] [bigint],\n\t[administered_moderna] [bigint],\n\t[administered_pfizer] [bigint]\n)\nWITH\n(\n\tDISTRIBUTION = ROUND_ROBIN,\n\tCLUSTERED COLUMNSTORE INDEX\n);",
 					"metadata": {
 						"language": "sql"
 					},
