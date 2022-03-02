@@ -16,6 +16,12 @@
 				"type": "nvarchar"
 			},
 			{
+				"name": "row_insert_time",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
 				"name": "state_code",
 				"type": "varchar"
 			},
